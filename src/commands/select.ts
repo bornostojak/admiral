@@ -55,7 +55,7 @@ export async function ProcessCommand(args: string[]) {
                 log.Print(`${status?.Active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
                 exit(0)
             }
-            log.Print(`Active projects: <green>${status?.Active?.join(", ")}</green>` )
+            log.Print(`<green><b>Active projects</b>:</green> ${status?.Active?.join(", ")}` )
             exit(0)
         }
         log.Print("<red>There are currently no active projects</red>" )
@@ -115,7 +115,7 @@ export async function Select(projects:string[], status? : Status) {
     await validateSelection(projects)
     status.Active = projects
     Status.Save(status)
-    log.Print(`Projects selected: <green>${projects.join(', ')}</green>`)
+    log.Print(`<green><b>Projects selected:</b></green> ${projects.join(', ')}`)
 }
 
 /**
@@ -163,11 +163,11 @@ export function DeselectSync(projects?:string[], status:Status = Status.Load()){
         let active : string[] = status.Active instanceof Array ? status.Active : [status.Active]
         projects.forEach(p => {
             if (!active.includes(p))
-            log.Print(`Not active: <red>${p}</red>`, true)
+            log.Print(`<red><b>Not active:</b></red> ${p}`, true)
         })
 
         let finalDeselection = active?.filter(a => projects.includes(a))
-        if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
+        if (finalDeselection?.length > 0) log.Print(`<yellow><b>Deselecting projects:</b></yellow> ${finalDeselection.join(', ')}`, true)
         status.Active = active.filter(p => !projects.includes(p))
         Status.Save(status)
         return
@@ -187,11 +187,11 @@ export async function Deselect(projects?:string[], status:Status = Status.Load()
         let active : string[] = status.Active instanceof Array ? status.Active : [status.Active]
         projects.forEach(p => {
             if (!active.includes(p))
-            log.Print(`Not active: <red>${p}</red>`, true)
+            log.Print(`<red><b>Not active:</b></red> ${p}`, true)
         })
 
         let finalDeselection = active?.filter(a => projects.includes(a))
-        if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
+        if (finalDeselection?.length > 0) log.Print(`<yellow><b>Deselecting projects:</b></yellow> ${finalDeselection.join(', ')}`, true)
         status.Active = active.filter(p => !projects.includes(p))
         Status.Save(status)
         return
