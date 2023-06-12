@@ -27,6 +27,12 @@ function validateProjectFile(projects:any) {
     return projects
 }
 
+export function GetExistingProjectsSync() : fs.Dirent[] {
+    let dir = fs.readdirSync(path.join(GetLocalConfigLocation(), "projects"), {withFileTypes: true})
+                .filter(dirent => dirent.isDirectory())
+    return dir
+}
+
 export function GetProjectsFileSync() {
     let projectsFilePath = GetProjectsFileLocation()
     if (projectsFilePath === null) exit(1)

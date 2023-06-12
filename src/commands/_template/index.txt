@@ -1,0 +1,36 @@
+import fs from 'fs'
+import docker from '../../docker.js'
+import yargs, { Options } from 'yargs'
+import logging from '../../logging'
+import { ReadStatusFromFileSync } from '../../config/status'
+import { exit } from 'process'
+
+let log = new logging("<TEMPLATE>")
+
+export const CommandOptions : Record<string, Options> = {
+    "help": {boolean: true, alias: 'h'},
+}
+
+export function ProcessCommand(args: string[]){
+    log.Trace({<TEMPLATE>:args})
+    let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
+    let command : string = parsedArgs?._.slice(0,1).join('')
+    let subcommand : string = parsedArgs?._.slice(1,2).join('')
+    if(subcommand == 'help' || parsedArgs?.help || (parsedArgs?._.length == 1 && args.length == 1)){
+        PrintHelp()
+        exit(0)
+    }
+    let status = ReadStatusFromFileSync()
+    //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
+}
+
+
+function PrintHelp() {
+    let help = log.Prefix('Help')
+    help.Print('USAGE:')
+    help.Print('')
+    help.Print('DESCRIPTION:')
+    help.Print('')
+    help.Print('OPTIONS:')
+    help.Print('')
+}

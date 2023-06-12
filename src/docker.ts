@@ -33,7 +33,8 @@ export interface NodeType {
     ManagerStatus: { Reachability: string, Addr: string}
 }
 
-export default async function connectToDockerOverSSH(sshConnectionParameters: object){
+
+export async function ConnectToDockerOverSSH(sshConnectionParameters: object){
     return new Promise<Docker>(async (resolve, reject) => {
         try {
             log.Debug("Creating a bound socket...")

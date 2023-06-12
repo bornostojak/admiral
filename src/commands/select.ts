@@ -1,11 +1,9 @@
-import fs, { stat } from 'fs'
-import { GetStatusFileLocation, GetLocalConfigLocation, Locations } from '../config/manager'
+import fs from 'fs'
 import logging from '../logging'
-import path from "path"
 import { exit } from 'process'
-import yargs, { fail, Options } from 'yargs'
-import { GetProjectsFileSync } from "../config/projects"
-import { kStringMaxLength } from 'buffer'
+import yargs, { Options } from 'yargs'
+import { GetExistingProjectsSync } from "../config/projects"
+import { ReadStatusFromFileSync, UpdateStatusFileSync } from "../config/status"
 
 let log = new logging("Select command")
 const DESELECT_SYMBOL = "^"
@@ -19,30 +17,18 @@ export const CommandOptions : Record<string, Options> = {
     "help": {boolean: true, alias: 'h'},
     "show": {boolean: true, alias: 's'},
     "deselect": {boolean: true, alias: 'd'},
+    "line": {boolean: true, alias: 'l'},
 }
 
-function processProjectsString(projectsString:string) : string[] {
-    if (!projectsString) return []
-    log.Trace({projectsString})
-    let projects : string[] = projectsString?.includes(SELECT_SYMBOL) ? readStatusFromFileSync()?.active ?? [] : []
-    projects = [...projects, ...projectsString
-        ?.split(',')
-        .map(f => f === 'all' ? GetProjectsFileSync().map(p => p?.name) : f )
-        .flat()
-    ]
-    return projects.filter((val, pos) => projects.indexOf(val) == pos 
-        && !projectsString.includes(`${SELECT_SYMBOL}${val}`)
-        && !projectsString.includes(`${DESELECT_SYMBOL}${val}`))
-}
 
 export function ProcessCommand(args: string[]) {
-    log.Trace({args})
+    log.Trace({select_args: args})
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
     let command : string = parsedArgs?._[0].toString()
-    let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
+    let projects : null|string|string[] = processProjectsString(parsedArgs?._.slice(1).join(',')?.toString()) ?? null
     let select = projects.filter(p => !p.startsWith('^')).map(p => p.replace(SELECT_REGEX, '')) ?? []
     let deselect = select.length > 0 ? [] : projects?.filter(p => p.startsWith('^'))?.map(p => p.replace(DESELECT_REGEX, '')) ?? []
-    let status = readStatusFromFileSync()
+    let status = ReadStatusFromFileSync()
     
     log.Prefix("SELECTION").Trace({command, projectsString: parsedArgs?._[1]?.toString(), select, deselect, initialStatus: status})
 
@@ -51,18 +37,24 @@ export function ProcessCommand(args: string[]) {
         command = 'deselect'
     }
 
-    if (parsedArgs.help) {
-        if (command === "deselect"){
+    if (parsedArgs.help  || args.length == 1) {
+        if (command === "deselect" || args[0] == "deselect"){
             PrintHelpDeselect()
             exit(0)
         }
-        PrintHelp()
-        exit(0)
+        if (command === "select" || args[0] === "select") {
+            PrintHelp()
+            exit(0)
+        }
     }
     
     if (parsedArgs.show){
         if (status?.active?.length > 0) {
             log.Trace("Printing active projects")
+            if (parsedArgs?.line) {
+                log.Print(`${status?.active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
+                exit(0)
+            }
             log.Print(`Active projects: <green>${status?.active?.join(", ")}</green>` )
             exit(0)
         }
@@ -79,7 +71,8 @@ export function ProcessCommand(args: string[]) {
     
     if (parsedArgs.all) {
         log.Debug("Selecting all projects")
-        select = GetProjectsFileSync().map(p => p?.name).filter(p => !deselect.includes(p))
+        //select = GetProjectsFileSync().map(p => p?.name).filter(p => !deselect.includes(p))
+        select = GetExistingProjectsSync().map(d => d?.name).filter(p => !deselect.includes(p))
         log.Trace({prjectsAfterSelectAll: projects})
     }
 
@@ -88,7 +81,6 @@ export function ProcessCommand(args: string[]) {
         exit(0)
     }
 
-    //SelectSync(projects.map(p => p.replace(/^\+/, '')).filter(p => !p.startsWith('-')))
     log.Debug("Selecting projects")
     log.Trace({select})
     SelectSync(select)
@@ -100,10 +92,24 @@ export function ProcessCommand(args: string[]) {
     exit(0)
 }
 
-export function SelectSync(projects:string[], status = readStatusFromFileSync()) {
+function processProjectsString(projectsString:string) : string[] {
+    if (!projectsString) return []
+    log.Trace({projectsString})
+    let projects : string[] = projectsString?.includes(SELECT_SYMBOL) ? ReadStatusFromFileSync()?.active ?? [] : []
+    projects = [...projects, ...projectsString
+        ?.split(',')
+        .map(f => f === 'all' ? GetExistingProjectsSync().map(p => p?.name) : f )
+        .flat()
+    ]
+    return projects.filter((val, pos) => projects.indexOf(val) == pos 
+        && !projectsString.includes(`${SELECT_SYMBOL}${val}`)
+        && !projectsString.includes(`${DESELECT_SYMBOL}${val}`))
+}
+
+export function SelectSync(projects:string[], status = ReadStatusFromFileSync()) {
     validateSelection(projects)
     status['active'] = projects
-    updateStatusFileSync(status)
+    UpdateStatusFileSync(status)
     log.Print(`Projects selected: <green>${projects.join(', ')}</green>`)
     //log.Log(`Project set to <blue>${projects}</blue>`)
 
@@ -121,7 +127,7 @@ function validateSelection(projects:string[]) {
     log.Debug('Validating selection...')
     log.Trace({projects})
     try {
-        let definedProjects = GetProjectsFileSync()
+        let definedProjects = GetExistingProjectsSync()
         if (!(definedProjects instanceof Array)) {
             log.Debug('<red>Validation FAILED.</red>')
             log.Error("Wrong syntax in <red>projects.json</red>!")
@@ -143,15 +149,8 @@ function validateSelection(projects:string[]) {
 }
 
 
-export async function updateStatusFile(status:any) {
-    await fs.promises.writeFile(getStatusFile() ,JSON.stringify(status, null, 4))
-}
-export function updateStatusFileSync(status:any) {
-    fs.writeFileSync(getStatusFile() ,JSON.stringify(status, null, 4))
-}
 
-
-export function DeselectSync(projects?:string[], status:any = readStatusFromFileSync()){
+export function DeselectSync(projects?:string[], status:any = ReadStatusFromFileSync()){
     log.Trace({status, project: projects})
     if (status?.active?.length === 0) {
         log.Log("No project is currently active, nothing to do")
@@ -167,49 +166,16 @@ export function DeselectSync(projects?:string[], status:any = readStatusFromFile
         let finalDeselection = active?.filter(a => projects.includes(a))
         if (finalDeselection?.length > 0) log.Log(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`)
         status.active = active.filter(p => !projects.includes(p))
-        updateStatusFileSync(status)
+        UpdateStatusFileSync(status)
         return
     }
     status['active'] = []
-    updateStatusFileSync(status)
+    UpdateStatusFileSync(status)
     log.Log('All projects have been deselected')
 }
 
 
 
-export async function readStatusFromFile() {
-    let statusFile = getStatusFile()
-    let fileContent = await fs.promises.readFile(statusFile)
-    try {
-        return JSON.parse(fileContent.toString())
-    } catch(err) {
-        log.Error(`The file <red>${statusFile}</red> could not be properly parsed`)
-        exit(1)
-    }
-
-}
-export function readStatusFromFileSync() {
-    let statusFile = getStatusFile()
-    let fileContent = fs.readFileSync(statusFile)
-    try {
-        let status = JSON.parse(fileContent.toString())
-        log.Trace({status})
-        return status
-    } catch(err) {
-        log.Error(`The file <red>${statusFile}</red> could not be properly parsed`)
-        exit(1)
-    }
-}
-
-function getStatusFile() {
-    let statusFile = GetStatusFileLocation()
-    if (statusFile === null) {
-        log.Error("The status file could not be located.\nSelect one of the following locations and there configure a <red>status.json</red> file:\n\n")
-        log.Error(Locations?.local)
-        exit(1)
-    }
-    return statusFile
-}
 
 
 function PrintHelp() {
@@ -221,19 +187,24 @@ function PrintHelp() {
     //log.Print('')
     //log.Print('  special case:')
     help.Print('  <red>mob select</red> <b><green>all</green></b>,... [OPTIONS]')
-    help.Print('    - select all projects')
     help.Print('  <red>mob select</red> <b><green>+PROJECT1</green></b>,<b><blue>^PROJECT2</blue></b>... [OPTIONS]')
-    help.Print('    - add <green>PROJECT2</green> to the existing selection')
-    help.Print('    - deselect or subtract <blue>PROJECT2</blue> from the selection')
     help.Print('')
     help.Print('DESCRIPTION:')
     help.Print('  Select one or multiple projects and designate them as <red>active</red>')
+    help.Print('  All projects can be selected using the <b><green>all</green></b> keyword.')
+    help.Print('  Adding <b><green>+</green></b> in front of the project name will <green>add</green> it to the selection.')
+    help.Print('  Adding <b><blue>^</blue></b> in front of the project name will <blue>remove</blue> ait to the selection.')
     help.Print('')
     help.Print('OPTIONS:')
     help.Print(`  -a, --all         - select all available projects`)
-    help.Print(`  -s, --show        - show the current active project`)
     help.Print(`  -d, --deselect    - deselect the currently active project`)
     help.Print(`  -h, --help        - print the help message`)
+    help.Print(`  -l, --list        - list the active projects line by line`)
+    help.Print(`  -s, --show        - show the current active project`)
+    help.Print('')
+    help.Print('ALIASED:')
+    help.Print(`  <red>selected</red>   -> <red>select -s</red>`)
+    help.Print(`  <red>active</red>     -> <red>select -s</red>`)
     help.Print('')
 }
 function PrintHelpDeselect(){
@@ -247,7 +218,7 @@ function PrintHelpDeselect(){
     help.Print('  Deselect specific projects or all projects.')
     help.Print('')
     help.Print('OPTIONS:')
-    help.Print(`  -h, --help                          - print the help message`)
+    help.Print(`  -h, --help        - print the help message`)
     help.Print('')
 }
 

@@ -21,6 +21,7 @@ ProcessMainArgs(mobArgsUnparsed, command === '')
 
 let commandArgsUnparsed = command === '' ? [] : argsUnparsed.slice(argsUnparsed.indexOf(command))
 ProcessArguments(commandArgsUnparsed)
+
 //console.log({command, mobArgsUnparsed, commandArgsUnparsed})
 
 
@@ -58,7 +59,7 @@ function ProcessMainArgs(args: string[], noCommandDefined:boolean) {
     let yargsMainOptions : {[key: string]: Options;}= {
         help: {
             type: 'boolean',
-            alias: 'help'
+            alias: 'h'
         },
     }
     let mobArgs = yargs(args).help(false).options(yargsMainOptions).argv

@@ -172,15 +172,6 @@ export async function ProcessCommand(commands: string[]) {
     }
 }
 
-
-export function GetStatusFileLocation() {
-    let localConfig = GetLocalConfigLocation()
-    if (!localConfig){
-        return null
-    }
-    let statusFile = path.join(localConfig, 'status.json')
-    return statusFile
-}
 //if (c.SSH?.privateKey)
     //console.log(fs.readFileSync(ResolveUri(c.SSH.privateKey)).toString())
 //log.log(JSON.stringify(await GetLocalConfigFiles(['config.yaml'])))

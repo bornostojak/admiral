@@ -68,35 +68,40 @@ export default class log{
         return tmp
     }
 
-    public Print(message:any = "") {
+    public Print(message:any = "", logMessage=false) {
         let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"PRINT"+log.ed+log._joint)))))
         log.write(text, stdout)
+        if (logMessage)
+            this.logToFile(message, '')
+        return message
     }
 
     public Log(message:any = "") {
         let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"LOG"+log.ed+log._joint)))))
+        this.logToFile(message, '')
+        if (log._debug < 1) return
         log.write(text, stdout)
-        this.logToFile(text, '')
     }
 
     public Error(message:any = "") {
         let preString = chalk.bold(chalk.bgRed(log.op+"ERROR"+log.ed))+log.rotBgColor(this._prefixes)
         let text = (ConvertToString(message, `${preString}`))
         log.write(text, stderr)
-        this.logToFile(text, '')
+        this.logToFile(message, '')
     }
 
     public Info(message:any = "") {
-        let preString = log.rotBgColor(this._prefixes) + (log._logLevel > 0 ? '' : chalk.bgBlack(chalk.white(log.op+"INFO"+log.ed+log._joint)))
+        let preString = log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"INFO"+log.ed+log._joint)))
         let text = (ConvertToString(message, `${preString}`))
-        this.logToFile(text, "")
+        this.logToFile(message, "")
+        if (log._debug < 1) return
         log.write(text, stdout)
     }
 
     public Trace(message:any = "") {
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
-        this.logToFile(text, "")
+        this.logToFile(message, "")
         if (log._debug < 2) return
         log.write(text, stdout)
     }
@@ -104,7 +109,7 @@ export default class log{
     public Debug(message:any = "") {
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
-        this.logToFile(text, "")
+        this.logToFile(message, "")
         if (log._debug < 1) return
         log.write(text, stdout)
     }
@@ -114,6 +119,7 @@ export default class log{
     }
 
     private logToFile(message:string, filePath: string) {
+        message = ConvertToString(message)
         let logString = message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
         //TODO: wirte logging to file
     }
