@@ -4,7 +4,7 @@ import { exit } from 'process'
 import path from 'path'
 import { ResolveUri } from '../helper/path'
 
-const log = new logging('Project configuration')
+const log = new logging('Config(project)')
 
 export enum ProjectStatus {
     suspended = 4,
@@ -17,6 +17,10 @@ export default class ProjectConfig {
     public Status: ProjectStatus = ProjectStatus.inactive;
     public Name: string = ""
     public Path: string = ""
+    
+    private constructor() {
+        
+    }
 
 
     public Save(project?: string): void {

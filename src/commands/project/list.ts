@@ -46,11 +46,17 @@ export async function ProcessCommand(args: string[]){
     }
     let projectStatusInfo : Record<string, string> = {}
     if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
+        log.Print(helpers.Json.ColorizedJSON(projects
+            .map(p => ProjectConfig.LoadByName(p))
+            .filter(p => p !== null)
+            .map(p => (p as ProjectConfig).toJSON())))
         exit(0)
     }
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
+        log.Print(helpers.Json.toTableString(projects
+            .map(p => ProjectConfig.LoadByName(p))
+            .filter(p => p !== null)
+            .map(p => (p as ProjectConfig).toJSON())))
         exit(0)
     }
     for (let projectName of projects) {
