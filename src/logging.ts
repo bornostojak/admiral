@@ -68,7 +68,7 @@ export default class log{
         return tmp
     }
 
-    public Print(message:any = "", logMessage=false) {
+    public Print(message:any = "", logMessage:boolean=false) {
         let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"PRINT"+log.ed+log._joint)))))
         log.write(text, stdout)
         if (logMessage)
