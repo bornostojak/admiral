@@ -19,7 +19,7 @@ export default class log{
 
     private static rotBgColor(messages: string[], joiner:string = '') {
         let parsed = []
-        messages = this._logLevel > 1 ? messages : messages.slice(-1)
+        messages = this._logLevel > 1 ? messages : messages.slice(0,1)
         const colorWheel = [
             (m:string) => chalk.black(chalk.bgRgb(167, 123, 76)(m)),
             (m:string) => chalk.black(chalk.bgRgb(111, 211, 108)(m)),
@@ -69,12 +69,12 @@ export default class log{
     }
 
     public Print(message:any = "") {
-        let text = (ConvertToString(message, log.rotBgColor(this._prefixes)))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"PRINT"+log.ed+log._joint)))))
         log.write(text, stdout)
     }
 
     public Log(message:any = "") {
-        let text = (ConvertToString(message, log.rotBgColor(this._prefixes)))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"LOG"+log.ed+log._joint)))))
         log.write(text, stdout)
         this.logToFile(text, '')
     }
@@ -87,10 +87,9 @@ export default class log{
     }
 
     public Info(message:any = "") {
-        let preString = log.rotBgColor(this._prefixes) + chalk.bgGreenBright(chalk.white(log.op+"INFO"+log.ed+log._joint))
+        let preString = log.rotBgColor(this._prefixes) + (log._logLevel > 0 ? '' : chalk.bgBlack(chalk.white(log.op+"INFO"+log.ed+log._joint)))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(text, "")
-        if (log._logLevel < 2) return
         log.write(text, stdout)
     }
 

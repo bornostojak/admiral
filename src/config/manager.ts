@@ -7,27 +7,6 @@ import chalk from 'chalk'
 
 export const ProjectName = 'Motherbee'
 
-//function log(message:any, isError:boolean = false) {
-//
-//    let op = stdout.isTTY ? ' ' : ''
-//    let ed = stdout.isTTY ? ' ' : ''
-//
-//    let method = isError ? stderr : stdout
-//
-//    method.write(
-//        (<string> message.toString())
-//        ?.split("\n")
-//        .map(l => chalk.black(chalk.bgRgb(167, 123, 76)(op+"Configuration"+ed))
-//        +' '+l)
-//        .join('n')+'\n'
-//    )
-//    //import('../logging.js').then((logging) => {
-//    //    let log = new logging.default.default('Configuration manager')
-//    //    if (prefix) log = log.prefix(prefix) 
-//    //    log.debug(message)
-//    //}).finally(() => {})
-//}
-
 interface ISSH {
     username: string|undefined,
     password: string|undefined,
@@ -135,6 +114,7 @@ export default class Config {
 
 
 
+//TODO: support a location that can be defined using MOTHERBEE_CONFIG env variable, useful for testing
 export const Locations = {
         global: [
             '/etc/motherbee'
