@@ -5,6 +5,8 @@ import crypto from "crypto"
 import YAML from 'yamljs'
 import * as fs from 'fs';
 import * as path from 'path';
+import { Server } from "./config/servers.js"
+import Config from "./config/manager.js"
 
 let log = new logging("Docker management")
 
@@ -51,6 +53,18 @@ export async function ConnectToDockerOverSSH(sshConnectionParameters: object){
             reject(err)
         }
     } )
+}
+
+export function ConvertServerToSSHConnInfo(server: Server) {
+   let localConfig = Config.GetLocalConfigSync()
+   if (localConfig?.ssh?.privateKey) {
+    let info = {debug: true, host: server["host"], port: server["port"], username: server["username"], privateKey: Buffer.from(localConfig?.ssh?.privateKey, 'utf-8')}
+    log.Print(info)
+    return info
+   }
+   let info = {host: server["host"], port: server["port"], username: server["username"], password: server["password"]}
+   log.Print(info)
+   return info
 }
 
 export async function Deploy(docker: Docker, stack: string, project: string) {
