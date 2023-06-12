@@ -118,11 +118,7 @@ export function PrintHelp() {
     log.Print("    <red>troubleshooting</red>         create troubleshooting scripts and run them to help with issue localization and detection")
     log.Print()
     log.Print("  Serialization:")
-    log.Print("    <red>export</red>              serialize the current state of the stack")
     log.Print("    <red>exfiltrate</red>              serialize the current state of the stack")
-    log.Print("    <red>transcribe</red>              serialize the current state of the stack")
-    log.Print("    <red>package</red>                 serialize the current state of the stack")
-    log.Print("    <red>cast</red>                    cast the current state of the docker stacks into a project.tar.gz file")
     log.Print("    <red>dump</red>                    dump the current state of the docker stacks into a <project_name>.tar.gz file ")
     log.Print()
 
