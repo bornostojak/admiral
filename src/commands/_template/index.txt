@@ -21,7 +21,6 @@ export function ProcessCommand(args: string[]){
         exit(0)
     }
     let status = Status.Load()
-    //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
 }
 
 
