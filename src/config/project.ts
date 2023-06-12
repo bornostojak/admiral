@@ -95,11 +95,16 @@ export default class ProjectConfig {
         return tmp
     }
 
-    public static Directory() {
+    public static InitProjectConfig() {
         let projectsPath = ResolveUri("~/.config/admiral/projects")
         if (!existsSync(projectsPath)) {
             mkdirSync(projectsPath, { recursive: true })
         }
+        return projectsPath
+    }
+    public static Directory() {
+        let projectsPath = ResolveUri("~/.config/admiral/projects")
+        this.InitProjectConfig()
         return projectsPath
     }
 

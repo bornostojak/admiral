@@ -17,6 +17,7 @@ import Config from "../config/manager.js"
 import LocalConfig from "../config/localConfig.js"
 import { Status } from "../config/status.js"
 import { readFileSync } from "fs"
+import ProjectConfig from "../config/project.js"
  
 const log = new logging("Command Parser")
 
@@ -30,6 +31,7 @@ export default async function ProcessArguments(args:string[]) {
     delete parsedArgs["_"]
     log.Trace({command, subcommands, options: parsedArgs})
     LocalConfig.InitLocalConfig()
+    ProjectConfig.InitProjectConfig()
     Status.InitStatus()
     if (command === 'help') {
         PrintHelp()
