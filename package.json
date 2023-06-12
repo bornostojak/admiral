@@ -11,6 +11,8 @@
     "test": "node dist/connect.js",
     "build": "tsc",
     "start": "node dist/index.js",
+    "precommit": "tsc",
+    "prepublish": "tsc",
     "pkg": "npm run build && pkg -c package.json -t node18-linux dist/index.js -o bin/mob",
     "pkgq": "npm run build >/dev/null && pkg -c package.json -t node18-linux dist/index.js -o bin/mob > /dev/null",
     "connect_test": "node dist/connect",
