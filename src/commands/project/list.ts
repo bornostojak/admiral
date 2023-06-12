@@ -46,7 +46,7 @@ export async function ProcessCommand(args: string[]){
     }
     let projectStatusInfo : Record<string, string> = {}
     if (parsedArgs.json) {
-        log.Print(helpers.Json.Colorized(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
+        log.Print(helpers.Json.ColorizedJSON(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
         exit(0)
     }
     if (parsedArgs.table) {

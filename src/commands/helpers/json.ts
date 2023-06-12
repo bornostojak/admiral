@@ -1,7 +1,7 @@
 import logging, {Formatting as ColorFormatting} from '../../logging'
 import Colorizer from 'json-colorizer'
 
-export function Colorized(obj: object) {
+export function ColorizedJSON(obj: object) {
     return Colorizer(JSON.stringify(obj, null, 2))
 }
 

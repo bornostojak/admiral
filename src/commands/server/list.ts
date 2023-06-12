@@ -55,7 +55,7 @@ export async function ProcessCommand(args: string[]){
     }
     log.Trace({listed_servers: servers})
     if (parsedArgs.json) {
-        log.Print(helpers.Json.Colorized(servers.reduce((acc, cur) => {
+        log.Print(helpers.Json.ColorizedJSON(servers.reduce((acc, cur) => {
             let key = Object.keys(cur)[0]
             acc[key] = cur[key]
             return acc
