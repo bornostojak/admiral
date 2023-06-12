@@ -1,3 +1,7 @@
 import * as json from './json'
+import { validateOrInitLocalConfigDirectoryWithDefaults } from './config'
 
-export const Json = json
+export {
+    json as Json,
+    validateOrInitLocalConfigDirectoryWithDefaults
+}
