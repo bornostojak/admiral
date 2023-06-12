@@ -16,6 +16,7 @@ import Config from "../config/manager.js"
 
 import LocalConfig from "../config/localConfig.js"
 import { Status } from "../config/status.js"
+import { readFileSync } from "fs"
  
 const log = new logging("Command Parser")
 
@@ -65,6 +66,8 @@ export default async function ProcessArguments(args:string[]) {
             break
         case "service":
             await Service.ProcessCommand(args)
+            break
+        case "man":
             break
         case "test":
             let testing = LocalConfig.Load()

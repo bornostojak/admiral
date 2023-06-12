@@ -1,4 +1,4 @@
-.TH Derrik 1 "2023-05-22" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
+.TH Admiral 1 "2023-05-22" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
 .SH "NAME"
 udt-check
 \- organizes the docker swarm code and infrastructure in such a way that maintenance, upgrades, reconfiguration is easy when one codebase is shared between multiple projects
@@ -95,7 +95,7 @@ PREREQUISITES:
 .RS 4
 .RE
 .I CLIENT_CHECK_DEVICE_TYPE
-\- client device type (mobile)
+\- client device type (admiralile)
 .RS 4
 .RE
 .I CLIENT_CHECK_DEVICE_UID
@@ -141,7 +141,7 @@ PREREQUISITES:
 .RS 4
 .RE
 .I CLIENT_CHECK_DEVICE_TYPE
-\- client device type (mobile)
+\- client device type (admiralile)
 .RS 4
 .RE
 .I CLIENT_CHECK_DEVICE_UID
