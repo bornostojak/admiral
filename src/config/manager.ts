@@ -4,6 +4,7 @@ import fs from 'fs'
 import { ResolveUri } from '../helper/path.js';
 import { stderr, stdout } from 'process'
 import chalk from 'chalk'
+import { SSHCredentials } from './ssh.js';
 
 export const ProjectName = 'Motherbee'
 
@@ -21,12 +22,7 @@ export default class Config {
     constructor() {
 
     }
-    public ssh : ISSH = {
-        username: undefined,
-        password: undefined,
-        privateKey: undefined,
-        publicKey: undefined,
-    }
+    public ssh : SSHCredentials|undefined;
     public logging : null | ILogging = {
         level: 1,
         debug: 0,
@@ -39,15 +35,7 @@ export default class Config {
         let tmp = new Config()
         
         if ("ssh" in parsed) {
-            tmp.ssh = {...tmp.ssh, ...parsed['ssh']}
-            tmp.ssh.privateKey = (tmp.ssh?.privateKey 
-                && fs.existsSync(ResolveUri(tmp.ssh?.privateKey))
-                && !tmp.ssh?.privateKey?.startsWith('-----BEGIN OPENSSH PRIVATE KEY-----')
-            ) ? fs.readFileSync(ResolveUri(tmp.ssh.privateKey)).toString() : tmp.ssh?.privateKey
-            tmp.ssh.publicKey = (tmp.ssh?.publicKey 
-                && fs.existsSync(ResolveUri(tmp.ssh?.publicKey))
-                && !tmp.ssh?.publicKey?.startsWith('-----BEGIN OPENSSH public KEY-----')
-            ) ? fs.readFileSync(ResolveUri(tmp.ssh.publicKey)).toString() : tmp.ssh?.publicKey
+            tmp.ssh = SSHCredentials.FromConfig(parsed['ssh']) ?? undefined
         }
         if ('logging' in parsed)
             tmp.logging = {...tmp.logging, ...parsed['logging']}
