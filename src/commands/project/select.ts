@@ -1,9 +1,9 @@
 import fs, { stat } from 'fs'
-import logging from '../logging'
+import logging from '../../logging'
 import { exit } from 'process'
 import yargs, { Options } from 'yargs'
-import { GetExistingProjects } from "../config/projects"
-import { ReadStatusFromFileSync, ReadStatusFromFile, UpdateStatusFileSync, UpdateStatusFile, Status } from "../config/status"
+import { GetExistingProjects } from "../../config/projects"
+import { ReadStatusFromFileSync, ReadStatusFromFile, UpdateStatusFileSync, UpdateStatusFile, Status } from "../../config/status"
 
 let log = new logging("Select command")
 const DESELECT_SYMBOL = "^"

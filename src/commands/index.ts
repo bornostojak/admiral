@@ -6,7 +6,13 @@ import * as Select from './select'
 import * as Deploy from './deploy'
 import * as Service from './service'
 import * as List from './list'
+import * as Server from './server/index'
+import * as Project from './project/index'
 
+import * as jsonHelpers from './helpers/json'
+import { SSHCredentials } from "../config/ssh.js"
+import Config from "../config/manager.js"
+ 
 const log = new logging("Command Parser")
 
 
@@ -22,12 +28,16 @@ export default async function ProcessArguments(args:string[]) {
         PrintHelp()
     }
     switch (command) {
+        case "a":
         case "active":
         case "selected":
             Select.ProcessCommand(['select', '-s', ...args.filter(f => f != 'select')])
             break
         case "deploy":
             await Deploy.ProcessCommand(args)
+            break
+        case "ds":
+            await Select.ProcessCommand(["deselect", "all"])
             break
         case "deselect":
             await Select.ProcessCommand(args)
@@ -38,8 +48,26 @@ export default async function ProcessArguments(args:string[]) {
         case "select":
             await Select.ProcessCommand(args)
             break
+        case "project":
+            await Project.ProcessCommand(args)
+            break
+        case "server":
+            await Server.ProcessCommand(args)
+            break
         case "service":
             await Service.ProcessCommand(args)
+            break
+        case "test":
+            let test_object = {
+                string: "khalihfa",
+                int: 22,
+                float: 22.1,
+                bool: true,
+                nill: null,
+                array: ["sfdas", "fajsdlf"],
+                object: {sdfasdsaffdsolka:"polka"}
+            }
+            log.Print(jsonHelpers.IndentedStringify([test_object, test_object], {title: "Nikola", value: "Tesla"}))
             break
         default:
             commandNotFound(command)
@@ -73,13 +101,21 @@ export function PrintHelp() {
     log.Print()
     log.Print("COMMANDS")
     log.Print("  Basics:")
-    log.Print("    <red>deselect</red>              deselect one or more currently active projects")
-    log.Print("    <red>download</red>              serialize the current state of the stack")
-    log.Print("    <red>select</red>                select one or more projects as active")
-    log.Print("    <red>service</red>              manager services")
+    log.Print("    <red>deselect, ds</red>            deselect one or more currently active projects")
+    log.Print("    <red>list</red>                    list additional information")
+    log.Print("    <red>select</red>                  select one or more projects as active")
+    log.Print()
+    log.Print("  Management:")
+    log.Print("    <red>project</red>                 manage projects")
+    log.Print("    <red>rack</red>                    manage racks")
+    log.Print("    <red>server</red>                  manage servers")
+    log.Print("    <red>service</red>                 manage services")
     log.Print()
     log.Print("  Info:")
-    log.Print("    <red>active, selected</red>      print out active projects")
+    log.Print("    <red>selected, active, a</red>     print out active projects")
+    log.Print()
+    log.Print("  Serialization:")
+    log.Print("    <red>serialize</red>               serialize the current state of the stack")
     log.Print()
 
     process.exit(0)

@@ -1,12 +1,12 @@
 import fs from 'fs'
-import { ConnectToDockerOverSSH, ConvertServerToSSHConnInfo } from '../../docker.js'
-import yargs, { Options } from 'yargs'
+import { ConnectToDockerOverSSH } from '../../docker.js'
+import yargs, { Options, version } from 'yargs'
 import logging from '../../logging'
-import { ReadStatusFromFileSync } from '../../config/status'
+import { ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
 import { exit } from 'process'
 import path from 'path'
 import Config, { GetLocalConfigLocation } from '../../config/manager.js'
-import { GrabServers } from '../../config/servers.js'
+import {ContainerTaskSpec, TaskSpec} from 'dockerode'
 
 let log = new logging("Service List")
 
@@ -23,33 +23,33 @@ export async function ProcessCommand(args: string[]){
         PrintHelp()
         exit(0)
     }
-    let status = ReadStatusFromFileSync()
+    let status = await ReadStatusFromFile()
     for (let activeProject of status.active) {
         let activeProjectServersFilePath = path.join(GetLocalConfigLocation(), "projects", activeProject, "servers.json")
-        let localConfig = Config.GetLocalConfigSync()
+        let localConfig = await Config.GetLocalConfig()
         if (!fs.existsSync(activeProjectServersFilePath)) {
             log.Print(`No "servers.json" file exists for project <red>${activeProject}</red>`)
             continue
         }
-        // let serversFile = JSON.parse(fs.readFileSync(activeProjectServersFilePath).toString())
-        // let first = serversFile[0]
-        let servers = await GrabServers(activeProject)
-        let first = servers[0]
-        let fo = ConvertServerToSSHConnInfo(first)
+        let serversFile = JSON.parse(fs.readFileSync(activeProjectServersFilePath).toString())
+        let first = serversFile[0]
         log.Print(`Project <b><red>${activeProject}</red></b>:`)
         try {
-            let docker = await ConnectToDockerOverSSH(fo
-                // {
-                    // username: first.username,
-                    // host: first.host,
-                    // port: first.port,
-                    // password: first.password
-                // }
+            let docker = await ConnectToDockerOverSSH(
+                {
+                    username: first.username,
+                    host: first.host,
+                    port: first.prot,
+                    password: first.password
+                }
             )
             let services = await docker.listServices()
-            // log.Print(JSON.stringify(services, null ,4))
-            log.Print(services.map(s => `<cyan>${s?.Spec?.Name}</cyan>`).join('\n  ').replace(/^/g, '  '))
-            log.Print()
+            log.Print(JSON.stringify(services.map(s => ({[String(s.Spec?.Name)]: {
+                image: (<ContainerTaskSpec>s.Spec?.TaskTemplate).ContainerSpec?.Image?.split(':')[0],
+                version: (<ContainerTaskSpec>s.Spec?.TaskTemplate).ContainerSpec?.Image?.replace(/[^:]*:([^@]+).*/, "$1"),
+            }})), null, 2))
+            // log.Print(services.map(s => s.ServiceStatus).join('\n  ').replace(/^/g, '  '))
+            // log.Print()
         }
         catch(err) {
             log.Error(err)
@@ -60,6 +60,7 @@ export async function ProcessCommand(args: string[]){
     }
     //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
 }
+
 
 
 function PrintHelp() {

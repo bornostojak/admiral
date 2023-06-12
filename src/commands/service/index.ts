@@ -7,6 +7,7 @@ import * as projectsConfig from '../../config/projects'
 import { exit } from 'process'
 
 import * as List from './list'
+import * as Versions from './versions'
 
 let log = new logging("Service")
 
@@ -20,20 +21,19 @@ export async function ProcessCommand(args: string[]){
     let command : string = parsedArgs?._.slice(0,1).join('')
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
     
-    if (subcommand == "ls" || subcommand == "list") {
-        await List.ProcessCommand(args.slice(1))
-        exit(0)
+    switch (subcommand) {
+        case "ls":
+        case "list":
+            await List.ProcessCommand(args.slice(1))
+            break
+        case "versions":
+            await Versions.ProcessCommand(args.slice(1))
     }
 
     if(subcommand == 'help' || parsedArgs?.help || (parsedArgs?._.length == 1 && args.length == 1)){
         PrintHelp()
         exit(0)
     }
-    let status = ReadStatusFromFileSync()
-    let projects = projectsConfig.GetExistingProjectsSync()
-    log.Print(projects.map(d => d.name).join('\n'))
-
-    //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
 }
 
 

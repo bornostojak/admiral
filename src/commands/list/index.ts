@@ -6,7 +6,6 @@ import { exit } from 'process'
 import { GetExistingProjects, GetExistingProjectsSync } from '../../config/projects.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
-import * as Servers from './servers'
 
 let log = new logging("List")
 
@@ -22,12 +21,7 @@ export async function ProcessCommand(args: string[]){
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
     let status = await ReadStatusFromFile()
 
-    if (subcommand == "servers") {
-        await Servers.ProcessCommand(args.slice(1))
-        exit(0)
-    }
-
-    if(subcommand == 'help' || parsedArgs?.help){
+    if(subcommand == 'help' || parsedArgs?.help || (command == "list" && args.length == 1)){
         PrintHelp()
         exit(0)
     }
@@ -36,27 +30,22 @@ export async function ProcessCommand(args: string[]){
         log.Print("<b>Wrong arguments passed to <red>list</red> command!</b>")
         exit(1)
     }
-    let projects = await GetExistingProjects()
-    if (parsedArgs?.list) {
-        projects.map(d => d?.name).forEach(p => {
-            log.Print(`<cyan>${p}</cyan>`)
-        })
-        exit(0)
-    }
-    log.Print(['Existing projects: ', ...projects.map(f => `<cyan>${f?.name}</cyan>`)].join('\n  '))
 }
 
 
 function PrintHelp() {
     let help = log.Prefix('Help')
     help.Print('USAGE:')
-    help.Print('    <red>list</red> [OPTIONS]')
+    help.Print('    <red>list</red> [OPTIONS] COMMAND')
     help.Print('')
     help.Print('DESCRIPTION:')
-    help.Print('    <red>list</red> all existing projects')
+    help.Print('    <red>list</red> additional information.')
+    help.Print('')
+    help.Print('COMMANDS:')
+    help.Print('    <red>projects</red>       - list projects')
+    help.Print('    <red>servers</red>        - list servers')
     help.Print('')
     help.Print('OPTIONS:')
-    help.Print('    -l, --list        - print out existing projects line-by-line')
-    help.Print('    -u, --unveil      - reveal the username and password')
+    help.Print('    -h, --help                - print help')
     help.Print('')
 }
