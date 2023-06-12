@@ -12,6 +12,9 @@ let log = new logging("Projects list")
 
 import * as helpers from '../helpers/index'
 import { toIndentedStringify } from '../helpers/json'
+import { LocalConfig } from '../../config'
+
+export const LocalProjectDirectory = path.join(LocalConfig.Directory(), 'projects')
 
 export const CommandOptions: Record<string, Options> = {
     "help": { boolean: true, alias: 'h' },

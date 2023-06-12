@@ -7,15 +7,18 @@ import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 
 import * as helpers from '../helpers/index'
+import ProjectConfig from '../../config/project'
 
 let log = new logging("Servers list")
 
 export const CommandOptions : Record<string, Options> = {
-    "help": {boolean: true, alias: 'h'},
-    "unveil": {boolean: true, alias: 'u'},
-    "show": {boolean: true, alias: 's'},
-    "json": {boolean: true, alias: 'j'},
-    "table": {boolean: true, alias: 't'},
+    "help": { boolean: true, alias: 'h' },
+    "unveil": { boolean: true, alias: 'u' },
+    "show": { boolean: true, alias: 's' },
+    "json": { boolean: true, alias: 'j' },
+    "table": { boolean: true, alias: 't' },
+    "hostname": { boolean: true },
+    "hostname-only": { boolean: true },
 }
 
 export async function ProcessCommand(args: string[]){
@@ -30,50 +33,39 @@ export async function ProcessCommand(args: string[]){
         exit(0)
     }
 
-    let servers = []
-    if (status?.Active?.length < 1) {
-        log.Debug("No active projects")
-        log.Trace({status})
-        log.Print("<b><red>No active projects detected!</red></b>")
+    let activeProjects = ProjectConfig.GetProjects().filter(p => status.Active.includes(p.Name))
+    if (activeProjects.length == 0) {
+        log.Print("<red><b>No projects are currently active.</b></red>")
+        exit(1)
+    }
+
+    
+    if (parsedArgs.table) {
+        log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))))
         exit(0)
     }
-    for (let activeProject of status?.Active) {
-        let projectServersPath = path.join(GetLocalConfigLocation(), 'projects', activeProject, 'servers.json')
-        if (!fs.existsSync(projectServersPath)) {
-            log.Print(`<b>Project <red>${activeProject}</red> is missing the servers.json file.</b>`, true)
-            continue
-        }
-        log.Log(`server.json found for ${activeProject}`)
-        let activeProjectServer = JSON.parse((await fs.promises.readFile(projectServersPath)).toString())
-        if (!parsedArgs.unveil && !parsedArgs.show) {
-            for (let server of activeProjectServer) {
-                delete server.password
-                delete server.username
+    
+    if (parsedArgs.json) {
+        log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))))
+        exit(0)
+    }
+    
+    if (parsedArgs['hostname-only']) {
+        for (let project of activeProjects) {
+            for (let server of project.Servers) {
+                log.Print(server.Hostname)
             }
         }
-        servers.push({[activeProject]: activeProjectServer})
-    }
-    log.Trace({listed_servers: servers})
-    if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(servers.reduce((acc, cur) => {
-            let key = Object.keys(cur)[0]
-            acc[key] = cur[key]
-            return acc
-        })), true)
         exit(0)
     }
-    // print in table format
-    if (parsedArgs.table) {
-        log.Print(servers.map(s => helpers.Json.toTableString(s))?.reduce((a, b) => a+'\n'+b))
-        exit(0)
-    }
-    // print the server in indented format
     
-    servers.forEach(s => {
-        for (let [projectName, serverArray] of Object.entries(s)) {
-            log.Print(helpers.Json.toIndentedStringify(serverArray, {title: "Project", value: projectName}))
-        }
-    })
+    if (parsedArgs.hostname) {
+        activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify([{Servers: p.Servers.map(s => s.Hostname)}], {title: "Project", value: p.Name})))
+        exit(0)
+    }
+    
+    activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => s.toJSON()), {title: "Project", value: p.Name})))
+    exit(0)
 
 }
 
@@ -92,5 +84,7 @@ function PrintHelp() {
     help.Print('    -j, --json                 return in JSON format')
     help.Print('    -t, --table                print servers in table format')
     help.Print('    -h, --help                 print help')
+    help.Print('    -hostname                  print server hostnames (indented)')
+    help.Print('    -hostname-only             print only server hostnames (linear)')
     help.Print('')
 }

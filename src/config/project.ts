@@ -1,8 +1,10 @@
-import fs, { existsSync, mkdirSync, readFileSync, readSync, readdirSync, writeFile, writeFileSync } from 'fs'
+import fs, { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs'
 import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
 import { ResolveUri } from '../helper/path'
+import Server from './servers'
+
 
 const log = new logging('Config(project)')
 
@@ -17,11 +19,17 @@ export default class ProjectConfig {
     public Status: ProjectStatus = ProjectStatus.inactive;
     public Name: string = ""
     public Path: string = ""
+    public Servers: Server[] = []
     
     private constructor() {
 
     }
 
+
+    public GetServers() {
+        log.Debug(`Fetching servers for project ${this.Name}`)
+        this.Servers = Server.LoadServersForProject(this.Name)
+    }
 
     public Save(project?: string): void {
         try {
@@ -50,6 +58,7 @@ export default class ProjectConfig {
                 projectConfig = this.fromJSON(readFileSync(projectConfigFilePath).toString())
             projectConfig.Name = project
             projectConfig.Path = path.join(dirPath, project)
+            projectConfig.GetServers()
             return projectConfig
         } catch (err) {
             log.Log("Failed to load project configuration")
@@ -63,36 +72,44 @@ export default class ProjectConfig {
         return {
             Name: this.Name,
             Status: ProjectStatus[this.Status],
-            Path: this.Path.replace(ResolveUri('~'), '~')
+            Path: this.Path.replace(ResolveUri('~'), '~'),
         }
     }
 
     private static fromJSON(jsonData: string): ProjectConfig {
-        let jsonParsed = JSON.parse(jsonData)
-        log.Trace({ jsonData })
-        let tmp = new ProjectConfig()
+        log.Trace({ "Parsing Project from JSON": jsonData })
         try {
-            switch (jsonParsed?.Status ?? "inactive") {
-                case "active":
-                    tmp.Status = ProjectStatus.active
-                    break
-                case "inactive":
-                    tmp.Status = ProjectStatus.inactive
-                    break
-                case "suspended":
-                    tmp.Status = ProjectStatus.suspended
-                    break
-                default:
-                    tmp.Status = ProjectStatus.inactive
-                    break
+            let jsonParsed = JSON.parse(jsonData)
+            log.Trace({ jsonData })
+            let tmp = new ProjectConfig()
+            try {
+                switch (jsonParsed?.Status ?? "inactive") {
+                    case "active":
+                        tmp.Status = ProjectStatus.active
+                        break
+                    case "inactive":
+                        tmp.Status = ProjectStatus.inactive
+                        break
+                    case "suspended":
+                        tmp.Status = ProjectStatus.suspended
+                        break
+                    default:
+                        tmp.Status = ProjectStatus.inactive
+                        break
+                }
+            } catch {
+                tmp.Status = ProjectStatus.inactive
             }
-        } catch {
-            tmp.Status = ProjectStatus.inactive
+            if ("Path" in jsonParsed) {
+                tmp.Path = ResolveUri(jsonParsed.Path)
+            }
+            tmp.GetServers()
+            return tmp
+        } catch(err) {
+            log.Error("Errors encountered whilst parsing Project from JSON")
+            log.Error(err)
+            exit(1)
         }
-        if ("Path" in jsonParsed) {
-            tmp.Path = ResolveUri(jsonParsed.Path)
-        }
-        return tmp
     }
 
     public static InitProjectConfig() {
@@ -104,7 +121,7 @@ export default class ProjectConfig {
     }
     public static Directory() {
         let projectsPath = ResolveUri("~/.config/admiral/projects")
-        this.InitProjectConfig()
+        ProjectConfig.InitProjectConfig()
         return projectsPath
     }
 
@@ -112,7 +129,7 @@ export default class ProjectConfig {
     public static ListProjectNames(options: { withFileTypes: boolean } & { withFileTypes: false }): string[];
     public static ListProjectNames(): string[];
     public static ListProjectNames(options?: { withFileTypes: boolean }): (fs.Dirent | string)[] {
-        let path = this.Directory()
+        let path = ProjectConfig.Directory()
         let projectDirContent = readdirSync(path, { withFileTypes: true })
         let dirs = projectDirContent.filter((d) => d.isDirectory())
         let res = dirs.map((d) => (options && options.withFileTypes) ? d : d.name)
