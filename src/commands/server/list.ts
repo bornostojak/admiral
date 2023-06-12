@@ -1,5 +1,5 @@
 import fs from 'fs'
-import yargs, { Options, string } from 'yargs'
+import yargs, { Options, help, string } from 'yargs'
 import logging from '../../logging'
 import { Status } from '../../config/status'
 import { exit } from 'process'
@@ -62,32 +62,19 @@ export async function ProcessCommand(args: string[]){
         })), true)
         exit(0)
     }
+    // print in table format
     if (parsedArgs.table) {
-        // log.Print(helpers.Json.TableString(servers))
         log.Print(servers.map(s => helpers.Json.toTableString(s))?.reduce((a, b) => a+'\n'+b))
         exit(0)
     }
-    for (let project of servers) {
-        let projectName = Object.keys(project)[0].toString()
-        //log.Print(`<b>====== Project: <cyan>${projectName}</cyan> ======</b>`)
-        log.Print(`<b>Project: <cyan>${projectName}</cyan></b>`)
-        let max = 0
-        project[projectName].forEach((srv:object) => Object.keys(srv).forEach(s => max = max >= s.toString().length ? max : s.toString().length))
-        for (let projectServer of project[projectName]) {
-            Object.keys(projectServer).forEach(s => max = max >= s.length ? max : s.length)
-            Object.entries(projectServer).forEach(([key, val])=> {
-                if (val instanceof Array) {
-                    val = val.join(', ')
-                }
-                else if (val instanceof Object) {
-                    val = JSON.stringify(val)
-                }
-                log.Print(`  <b><cyan>${key.charAt(0).toUpperCase() + key.replace('_', ' ').slice(1)}</cyan></b>:${'.'.repeat(2+max - key.toString().length)} ${String(val)}`)
-            })
-            log.Print('')
+    // print the server in indented format
+    
+    servers.forEach(s => {
+        for (let [projectName, serverArray] of Object.entries(s)) {
+            log.Print(helpers.Json.toIndentedStringify(serverArray, {title: "Project", value: projectName}))
         }
-        //log.Print(`<b>================${"=".repeat(projectName.length)}=======</b>`)
-    }
+    })
+
 }
 
 

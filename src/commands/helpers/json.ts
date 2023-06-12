@@ -76,7 +76,7 @@ export function toTableString(obj: unknown, title?: false): string {
  * @param heading the object containing the title and title value information
  * @returns the string converted into an tab indented format
  */
-export function toIndentedStringify(obj: object, heading?: { title: string, value?: string }) {
+export function toIndentedStringify(obj: {[key: string]: any}[], heading?: { title: string, value?: string }) {
     let finalString = ""
     if (heading && "title" in heading) {
         let Header = `<b>${heading.title}</b>`
@@ -85,9 +85,9 @@ export function toIndentedStringify(obj: object, heading?: { title: string, valu
         }
         finalString += ColorFormatting(Header) + '\n'
     }
-    let objArray: Object[] = (obj instanceof Array) ? obj : [obj]
-    for (let entry of objArray) {
-        finalString += leftPadding(convertObjectToString(entry))
+    // let objArray: Object[] = (obj instanceof Array) ? obj : [obj]
+    for (let entry of obj) {
+        finalString += leftPadding(convertObjectToString(entry)) + '\n'
     }
     return finalString
 }
@@ -96,21 +96,21 @@ function leftPadding(string: string): string {
     return '  ' + string.replace(/\n/g, '\n  ').replace(/\n  $/, '\n')
 }
 
-function convertObjectToString(obj: Object): string {
+function convertObjectToString(obj: {[key: string]: any}): string {
     let parsedString: string = ""
-    let longestKeyLength = 5 + Math.max(...(Object.keys(obj).map(x => x.length)))
-    for (let [key, entry] of Object.entries(obj)) {
-        let dots = Array(longestKeyLength - key.length).join('.') + ': '
-        parsedString += ColorFormatting(`<b><cyan>${key}</cyan></b>`)
-        if (entry instanceof Array) {
-            parsedString += dots + entry.map(x => (typeof x === "string") ? x : JSON.stringify(x)).join(', ') + '\n'
+    let longestKeyLength = 4 + Math.max(...(Object.keys(obj).map(x => x.length)))
+    for (let [header, content] of Object.entries(obj)) {
+        let spacing = " ".repeat(longestKeyLength - header.length) + ': '
+        parsedString += ColorFormatting(`<b><cyan>${header}</cyan></b>`)
+        if (content instanceof Array) {
+            parsedString += spacing + content.map(x => (typeof x === "string") ? x : JSON.stringify(x)).join(', ') + '\n'
             continue
         }
-        if (entry instanceof Object) {
-            parsedString += ':\n' + leftPadding(convertObjectToString(entry)) + '\n'
+        if (content instanceof Object) {
+            parsedString += ':\n' + leftPadding(convertObjectToString(content)) + '\n'
             continue
         }
-        parsedString += dots + String(entry) + '\n'
+        parsedString += spacing + String(content) + '\n'
     }
     return parsedString
 }

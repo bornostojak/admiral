@@ -74,7 +74,7 @@ export async function ProcessCommand(args: string[]){
         }
     }
     // log.Print(helpers.Json.IndentedStringify(Object.fromEntries(projects.map(f => [f.name, '<green>Active</green>'])), {title: "Projects"}))
-    log.Print(helpers.Json.toIndentedStringify(projectStatusInfo, {title: "Projects"}))
+    log.Print(helpers.Json.toIndentedStringify([projectStatusInfo], {title: "Projects"}))
 
 }
 
