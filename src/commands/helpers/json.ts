@@ -45,6 +45,7 @@ export function toTableString(obj: unknown, title?: false): string {
     let maxLengthArray: { [key: string]: any }[] = srcObjectWithStringifiedValuesArray
         ?.map(o => Object.fromEntries(
             Object.entries(o)
+                .filter(([x, y]) => x && y)
                 .map(([x, y]) => [x, y.length > String(x).length ? y.length : String(x).length])
         ))
     let cellWidthByHeader = maxLengthArray.reduce((res, o) => {
