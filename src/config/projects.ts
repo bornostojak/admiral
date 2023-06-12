@@ -85,4 +85,21 @@ export class ProjectConfig {
         let res = dirs.map((d) => (options && options.withFileTypes) ? d : d.name )
         return res
     }
+
+    public static GetAll(): ProjectConfig[] {
+        return ProjectConfig.List()
+            .map(p => ProjectConfig.LoadByName(p))
+            .map(p => p as ProjectConfig)
+    }
+    public static GetProjects(options: {active: boolean}): ProjectConfig[] ;
+    public static GetProjects(): ProjectConfig[] ;
+    public static GetProjects(options?: {active: boolean}): ProjectConfig[] {
+        let projects = ProjectConfig.List()
+            .map(p => ProjectConfig.LoadByName(p))
+            .filter(p => p !== null)
+            .map(p => p as ProjectConfig)
+        if (options && 'active' in options)
+            return projects.filter(p => p !== null && p.Active === options.active)
+        return projects
+    }
 }
