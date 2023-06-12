@@ -3,7 +3,7 @@ import yargs, { Options, string } from 'yargs'
 import logging, { Formatting } from '../../logging'
 import { Status } from '../../config/status'
 import { exit } from 'process'
-import ProjectConfig from '../../config/project.js'
+import ProjectConfig, { ProjectStatus } from '../../config/project.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 import Colorizer from 'json-colorizer'
@@ -11,6 +11,7 @@ import Colorizer from 'json-colorizer'
 let log = new logging("Projects list")
 
 import * as helpers from '../helpers/index'
+import { toIndentedStringify } from '../helpers/json'
 
 export const CommandOptions : Record<string, Options> = {
     "help": {boolean: true, alias: 'h'},
@@ -30,9 +31,9 @@ export async function ProcessCommand(args: string[]){
         exit(0)
     }
 
-    let projects = ProjectConfig.ListProjectNames()
+    let projectNameArray = ProjectConfig.ListProjectNames()
     if (parsedArgs?.list) {
-        projects.forEach(p => {
+        projectNameArray.forEach(p => {
             log.Print(`${p}`)
         })
         exit(0)
@@ -46,42 +47,32 @@ export async function ProcessCommand(args: string[]){
     }
     let projectStatusInfo : Record<string, string> = {}
     if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(projects
+        log.Print(helpers.Json.ColorizedJSON(projectNameArray
             .map(p => ProjectConfig.LoadByName(p))
             .filter(p => p !== null)
             .map(p => (p as ProjectConfig).toJSON())))
         exit(0)
     }
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(projects
+        log.Print(helpers.Json.toTableString(projectNameArray
             .map(p => ProjectConfig.LoadByName(p))
             .filter(p => p !== null)
             .map(p => (p as ProjectConfig).toJSON())))
         exit(0)
     }
-    for (let projectName of projects) {
-        let projectInfoPath = `${localConfigLocation}/projects/${projectName}/project.json`
-        if (!existsSync(projectInfoPath)) {
-        }
-        try {
-            let projectInfo = JSON.parse(fs.readFileSync(projectInfoPath).toString())
-            if (projectInfo.Active.toString() === "true") {
-                projectStatusInfo[projectName] = Formatting("<green><b>Active</b></green>")
-                // if (currentStatus.Active.includes(projectName)) {
-                //     projectStatusInfo[projectName] += ' <green><b> (Selected)</b></green>'
-                // }
-                continue
-            }
-            projectStatusInfo[projectName] = Formatting("<red><b>Inactive</b></red>")
-        }
-        catch {
-            projectStatusInfo[projectName] = Formatting("<red><b>Inactive</b></red>")
-            continue
-        }
-    }
-    // log.Print(helpers.Json.IndentedStringify(Object.fromEntries(projects.map(f => [f.name, '<green>Active</green>'])), {title: "Projects"}))
-    log.Print(helpers.Json.toIndentedStringify([projectStatusInfo], {title: "Projects"}))
 
+    let projectConfigArray = ProjectConfig.GetProjects()
+    let projectStatusArray = projectConfigArray.map(p => {
+        switch(p.Status) {
+            case ProjectStatus.active:    return [p.Name, `<green>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</green>`]
+            case ProjectStatus.inactive:  return [p.Name, `<red>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</red>`]
+            case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</blue>`]
+
+        }
+    })
+    let statusesObject = Object.fromEntries(projectStatusArray)
+    log.Print(toIndentedStringify([statusesObject], {title: "Projects"}))
+    exit(0)
 }
 
 
