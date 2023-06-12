@@ -11,6 +11,33 @@ export interface Status {
     active: string[]
 }
 
+export class Status {
+
+    public Active : string[]|undefined;
+    public Confirmation : {
+        Prompted: boolean,
+        State: boolean
+    } = {Prompted:false, State: false}
+
+    public static Load(configuration: any) : Status {
+        let tmp = new Status()
+        if (!configuration) {
+            log.Error('<red><b>The configuration could not be found</b></red>')
+            exit(1)
+        }
+
+
+        if ('active' in configuration) {
+            tmp.Active = configuration['active'] as string[]
+        }
+        if ('confirmation' in configuration) {
+            tmp.Confirmation.Prompted = configuration['confirmation']['prompted'] as boolean
+            tmp.Confirmation.State = configuration['confirmation']['state'] as boolean
+        }
+        return tmp;
+    }
+}
+
 export function ReadStatusFromFileSync() : Status {
     let statusFile = GetStatusFile()
     let fileContent = fs.readFileSync(statusFile)

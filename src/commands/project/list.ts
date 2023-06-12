@@ -38,6 +38,7 @@ export async function ProcessCommand(args: string[]){
     }
     // log.Print(['Existing projects: ', ...projects.map(f => `<cyan>${f?.name}</cyan>`)].join('\n  '))
     let localConfigLocation = GetLocalConfigLocation()
+    let currentStatus = GetStatusFile()
     if (!existsSync(`${localConfigLocation}/projects`)) {
         log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${localConfigLocation}/projects"</cyan>`)
         exit(1)
@@ -49,7 +50,14 @@ export async function ProcessCommand(args: string[]){
         }
         try {
             let projectInfo = JSON.parse(fs.readFileSync(projectInfoPath).toString())
-            projectStatusInfo[projectName] = projectInfo["active"].toString() === "true" ? Formatting("<green><b>Active</b></green>") : Formatting("<red><b>Inactive</b></red>")
+            if (projectInfo["active"].toString() === "true") {
+                projectStatusInfo[projectName] = Formatting("<green><b>Active</b></green>")
+                if (currentStatus.Active.includes(projectName)) {
+                    projectStatusInfo[projectName] += ' <green><b> (Selected)</b></green>'
+                }
+                continue
+            }
+            projectStatusInfo[projectName] = Formatting("<red><b>Inactive</b></red>")
         }
         catch {
             projectStatusInfo[projectName] = Formatting("<red><b>Inactive</b></red>")

@@ -6,7 +6,7 @@ import { stderr, stdout } from 'process'
 import chalk from 'chalk'
 import { SSHCredentials } from './ssh.js';
 
-export const ProjectName = 'Motherbee'
+export const ProjectName = 'Derrik'
 
 interface ISSH {
     username: string|undefined,
@@ -27,7 +27,9 @@ export default class Config {
         level: 1,
         debug: 0,
     }
-
+    public get Path() {
+        return GetLocalConfigLocation()
+    }
 
     public static LoadFromStringSync(configString: string) {
         configString = configString.replace('"private_key"', '"privateKey"').replace('"public_key"', '"publicKey"')
@@ -103,15 +105,15 @@ export default class Config {
 
 
 
-//TODO: support a location that can be defined using MOTHERBEE_CONFIG env variable, useful for testing
+//TODO: support a location that can be defined using DERRIK_CONFIG env variable, useful for testing
 export const Locations = {
         global: [
-            '/etc/motherbee'
+            '/etc/derrik'
             ].map(f => ResolveUri(f)),
         local:[
-            ".motherbee",
-            "~/.motherbee",
-            "~/.config/motherbee/"
+            ".derrik",
+            "~/.derrik",
+            "~/.config/derrik/"
         ].map(f => ResolveUri(f))
     }
 export function GetLocalConfigLocation(options: any|undefined = undefined) {
