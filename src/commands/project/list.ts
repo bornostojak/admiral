@@ -18,6 +18,7 @@ export const LocalProjectDirectory = path.join(LocalConfig.Directory(), 'project
 
 export const CommandOptions: Record<string, Options> = {
     "help": { boolean: true, alias: 'h' },
+    "all": { boolean: true, alias: 'a' },
     "list": { boolean: true, alias: 'l' },
     "table": { boolean: true, alias: 't' },
     "json": { boolean: true, alias: 'j' },
@@ -35,7 +36,23 @@ export async function ProcessCommand(args: string[]) {
         exit(0)
     }
 
+    let status = Status.Load()
     let projects = ProjectConfig.GetProjects()
+
+    if (projects.length == 0) {
+        log.Print("<b>You don't have any projects defined yet.</b>")
+        exit(1)
+    }
+
+    if (!parsedArgs.all) {
+        projects = projects.filter(p => status.Active.includes(p.Name))
+    }
+
+    if (projects.length == 0) {
+        log.Print("No currently active projects")
+        exit(0)
+    }
+
     // filtering by status
     if (parsedArgs.status) {
         let validProjectStatusArray = Object.keys(ProjectStatus)
@@ -75,8 +92,8 @@ export async function ProcessCommand(args: string[]) {
 
     let projectStatusArray = projects.map(p => {
         switch (p.Status) {
-            case ProjectStatus.active:    return [p.Name, `<green>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</green>`]
-            case ProjectStatus.inactive:  return [p.Name, `<red>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</red>`]
+            case ProjectStatus.active: return [p.Name, `<green>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</green>`]
+            case ProjectStatus.inactive: return [p.Name, `<red>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</red>`]
             case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</blue>`]
 
         }
@@ -97,7 +114,8 @@ function PrintHelp() {
     help.Print('')
     help.Print('OPTIONS:')
     help.Print('    -h, --help                 print help')
-    help.Print('    -l, --list                 list only the existing projects')
+    help.Print('    -l, --list                 only list project names, suitable for piping')
+    help.Print('    -a, --all                  list all existing and defined projects')
     help.Print('    --status                   list only project with the specified statuses, separated by a comma symbol (i.e. inactive,active)')
     help.Print('')
 }
