@@ -4,4 +4,7 @@ bin/
 .research/
 *.map
 
+.vscode/
+!.vscode/launch.json
+
 local_config_folder
