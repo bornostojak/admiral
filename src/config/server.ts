@@ -32,23 +32,27 @@ export interface IServerOld {
 
 }
 
+export interface ServerDNSInfo {
+    FQDN: string[],
+    Nameservers: string[],
+    Hosts: { [key: string]: string }
+}
+
+export interface ServerDockerInfo {
+    Role: DockerRoleEnum
+    Labels: { [key: string]: string },
+    CgroupVersion: string,
+    DaemonConfig: { [key: string]: any }
+}
+
 export interface IServer {
     Hostname: string,
     IPv4: string,
     IPv6: string,
     SSHPort: number,
     Tags: string[],
-    DNS: {
-        FQDN: string[],
-        Nameservers: string[],
-        Hosts: { [key: string]: string }
-    },
-    Docker: {
-        Role: DockerRoleEnum
-        Labels: { [key: string]: string },
-        Cgroup: string,
-        DaemonConfig: { [key: string]: any }
-    }
+    DNS: ServerDNSInfo,
+    Docker: ServerDockerInfo
 
 }
 
@@ -58,15 +62,15 @@ export default class Server implements IServer {
     public IPv6: string = ""
     public SSHPort: number = 22
     public Tags: string[] = []
-    public DNS: { FQDN: string[], Nameservers: string[], Hosts: { [key: string]: string } } = {
+    public DNS: ServerDNSInfo = {
         FQDN: [],
         Nameservers: [],
         Hosts: {}
     }
-    public Docker: { Role: DockerRoleEnum; Labels: { [key: string]: string }; Cgroup: string; DaemonConfig: { [key: string]: any } } = {
+    public Docker: ServerDockerInfo = {
         Role: DockerRoleEnum.worker,
         Labels: {},
-        Cgroup: "2",
+        CgroupVersion: "2",
         DaemonConfig: {}
     }
 
@@ -78,7 +82,12 @@ export default class Server implements IServer {
             SSHPort: this.SSHPort,
             Tags: this.Tags.map(t => String(t)),
             DNS: this.DNS,
-            Docker: this.Docker
+            Docker: {
+                Role: Object.entries(DockerRoleEnum).filter(([k,v]) => v === this.Docker.Role)[0][0] ?? 'worker',
+                Labels: this.Docker.Labels,
+                CgroupVersion: this.Docker.CgroupVersion,
+                DaemonConfig: this.Docker.DaemonConfig,
+            }
         }).filter(([k, v]) => typeof v === "boolean" ? true : v ))
     }
     public static fromJSON(jsonData: { [key: string]: any }): Server;
@@ -99,7 +108,12 @@ export default class Server implements IServer {
             server.IPv6 = parsedJson.IPv6 as string
             server.DNS = parsedJson.DNS
             server.SSHPort = parsedJson.SSHPort as number
-            server.Docker = parsedJson.Docker
+            server.Docker = {
+                Role: Object.entries(DockerRoleEnum).filter(([key, val]) => val === parsedJson.Docker.Level ?? 'worker').map(([k,v]) => v as DockerRoleEnum)[0] ?? DockerRoleEnum.worker,
+                Labels: parsedJson.Docker.Labels,
+                CgroupVersion: parsedJson.Docker.CgroupVersion,
+                DaemonConfig: parsedJson.Docker.DaemonConfig
+            } 
             server.Tags = (parsedJson.Tags as any[]).map(t => t as string)
         } catch(err) {
             log.Error("Encountered error while parsing server json string")
