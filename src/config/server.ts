@@ -40,7 +40,8 @@ export interface IServer {
     Tags: string[],
     DNS: {
         FQDN: string[],
-        Nameservers: string[]
+        Nameservers: string[],
+        Hosts: { [key: string]: string }
     },
     Docker: {
         Role: DockerRoleEnum
@@ -57,9 +58,10 @@ export default class Server implements IServer {
     public IPv6: string = ""
     public SSHPort: number = 22
     public Tags: string[] = []
-    public DNS: { FQDN: string[], Nameservers: string[] } = {
+    public DNS: { FQDN: string[], Nameservers: string[], Hosts: { [key: string]: string } } = {
         FQDN: [],
-        Nameservers: []
+        Nameservers: [],
+        Hosts: {}
     }
     public Docker: { Role: DockerRoleEnum; Labels: { [key: string]: string }; Cgroup: string; DaemonConfig: { [key: string]: any } } = {
         Role: DockerRoleEnum.worker,
