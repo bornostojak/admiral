@@ -2,7 +2,7 @@ import fs from 'fs'
 import { ConnectToDockerOverSSH, ConvertServerToSSHConnInfo } from '../../docker.js'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status'
 import { exit } from 'process'
 import path from 'path'
 import Config, { GetLocalConfigLocation } from '../../config/manager.js'
@@ -23,8 +23,8 @@ export async function ProcessCommand(args: string[]){
         PrintHelp()
         exit(0)
     }
-    let status = ReadStatusFromFileSync()
-    for (let activeProject of status.active) {
+    let status = Status.Load()
+    for (let activeProject of status.Active) {
         let activeProjectServersFilePath = path.join(GetLocalConfigLocation(), "projects", activeProject, "servers.json")
         let localConfig = Config.GetLocalConfigSync()
         if (!fs.existsSync(activeProjectServersFilePath)) {

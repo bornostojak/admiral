@@ -1,12 +1,8 @@
 import fs from 'fs'
 import yargs, { Options, string } from 'yargs'
 import logging from '../../logging'
-import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status'
 import { exit } from 'process'
-import { GetExistingProjects, GetExistingProjectsSync } from '../../config/projects.js'
-import { GetLocalConfigLocation } from '../../config/manager.js'
-import path from 'path'
-import Colorizer from 'json-colorizer'
 import * as List from './list'
 import * as Select from './select'
 

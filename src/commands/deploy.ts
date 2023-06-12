@@ -1,7 +1,7 @@
 import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../logging'
-import { ReadStatusFromFile } from '../config/status'
+import { Status } from '../config/status'
 import { exit } from 'process'
 
 let log = new logging("Deploy")
@@ -16,7 +16,7 @@ export async function ProcessCommand(args: string[]){
     let command : string = parsedArgs?._[0].toString()
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
     //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
-    let status = await ReadStatusFromFile()
+    let status = Status.Load()
     if (parsedArgs.help || subcommand == 'help') {
         PrintHelp()
         exit(0)

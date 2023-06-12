@@ -1,9 +1,9 @@
 import fs, { existsSync } from 'fs'
 import yargs, { Options, string } from 'yargs'
 import logging, { Formatting } from '../../logging'
-import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status'
 import { exit } from 'process'
-import { GetExistingProjects, GetExistingProjectsSync } from '../../config/projects.js'
+import { ProjectConfig } from '../../config/projects.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 import Colorizer from 'json-colorizer'
@@ -29,22 +29,22 @@ export async function ProcessCommand(args: string[]){
     }
 
 
-    let projects = await GetExistingProjects()
+    let projects = ProjectConfig.List()
     if (parsedArgs?.list) {
-        projects.map(d => d?.name).forEach(p => {
+        projects.forEach(p => {
             log.Print(`${p}`)
         })
         exit(0)
     }
     // log.Print(['Existing projects: ', ...projects.map(f => `<cyan>${f?.name}</cyan>`)].join('\n  '))
     let localConfigLocation = GetLocalConfigLocation()
-    let currentStatus = GetStatusFile()
+    let currentStatus = Status.Path()
     if (!existsSync(`${localConfigLocation}/projects`)) {
         log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${localConfigLocation}/projects"</cyan>`)
         exit(1)
     }
     let projectStatusInfo : Record<string, string> = {}
-    for (let projectName of projects.map(p => p.name)) {
+    for (let projectName of projects) {
         let projectInfoPath = `${localConfigLocation}/projects/${projectName}/project.json`
         if (!existsSync(projectInfoPath)) {
         }

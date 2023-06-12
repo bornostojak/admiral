@@ -1,90 +1,173 @@
 import { GetLocalConfigLocation, Locations } from './manager'
 import { exit } from 'process'
-import fs from 'fs'
+import fs, { existsSync, mkdirSync, readFileSync, readSync, writeFileSync} from 'fs'
 import path from 'path'
 import logging from '../logging'
+import LocalConfig from "./localConfig"
+import { ResolveUri } from '../helper/path'
 
-let log = new logging("Command Helpers")
+let log = new logging("Config(Status)")
 
 
-export interface Status {
+export interface IStatus {
     active: string[]
 }
 
 export class Status {
 
-    public Active : string[]|undefined;
+    public Active : string[] = [];
     public Confirmation : {
         Prompted: boolean,
         State: boolean
     } = {Prompted:false, State: false}
 
-    public static Load(configuration: any) : Status {
-        let tmp = new Status()
-        if (!configuration) {
-            log.Error('<red><b>The configuration could not be found</b></red>')
+    /**
+     * 
+     * @returns return a JSON of the object
+     */
+    public toJSON() {
+        let json = {
+            Active: this.Active,
+            Confirmation: {
+                Prompted: this.Confirmation?.Prompted,
+                State: this.Confirmation?.State
+            }
+        }
+        return json
+    }
+
+    /**
+     * 
+     * @param jsonData the status information string in json format
+     * @returns the Status object
+     */
+    public fromJSON(jsonData: string): Status {
+        try {
+            log.Debug("Converting Status from json string")
+            let jsonParsed = JSON.parse(jsonData)
+            log.Trace(JSON.stringify(jsonParsed))
+            this.Active = jsonParsed['Active'] instanceof Array<string> ? jsonParsed['Active'] : []
+            this.Confirmation = {
+                Prompted: jsonParsed?.Confirmation?.Prompted ?? false,
+                State: jsonParsed?.Confirmation?.State ?? false
+            }
+            return this
+        } catch(err) {
+            log.Error('Failed to parse json data')
+            log.Error("ERROR:")
+            log.Error(err)
+            log.Error("JSON:")
+            log.Error({jsonData})
             exit(1)
         }
-
-
-        if ('active' in configuration) {
-            tmp.Active = configuration['active'] as string[]
-        }
-        if ('confirmation' in configuration) {
-            tmp.Confirmation.Prompted = configuration['confirmation']['prompted'] as boolean
-            tmp.Confirmation.State = configuration['confirmation']['state'] as boolean
-        }
-        return tmp;
     }
-}
 
-export function ReadStatusFromFileSync() : Status {
-    let statusFile = GetStatusFile()
-    let fileContent = fs.readFileSync(statusFile)
-    try {
-        let status = JSON.parse(fileContent.toString())
-        log.Trace({status})
+    /**
+     * 
+     * @param jsonData the status information string in json format
+     * @returns the Status object
+     */
+    public static fromJSON(jsonData: string): Status {
+        try {
+            log.Debug("Converting Status from json string")
+            let jsonParsed = JSON.parse(jsonData)
+            log.Trace(JSON.stringify(jsonParsed))
+            let tmp = new Status()
+            tmp.Active = jsonParsed['Active'] instanceof Array<string> ? jsonParsed['Active'] : []
+            tmp.Confirmation = {
+                Prompted: jsonParsed?.Confirmation?.Prompted ?? false,
+                State: jsonParsed?.Confirmation?.State ?? false
+            }
+            return tmp
+        } catch(err) {
+            log.Error('Failed to parse json data')
+            log.Error("ERROR:")
+            log.Error(err)
+            log.Error("JSON:")
+            log.Error({jsonData})
+            exit(1)
+        }
+    }
+
+    /**
+     * 
+     * @param path the path of the JSON configuration file - default is LocalConfig.Path
+     * @returns the local configuration in LocalConfig form, parsed
+     */
+    public static Load(path?: string) : Status {
+        path = path ? path : this.Path()
+        try {
+            if (!path) {
+                return Status.InitStatus()
+            }
+            return this.fromJSON(readFileSync(path).toString())
+        } catch(err) {
+            log.Error("Failed to load the Status file")
+            log.Error({err})
+            process.exit(1)
+        }
+    }
+
+    /**
+     * 
+     * @param status the Status object to be serialized
+     * @param path the path the file should be saved to - default is Status.Path()
+     * @returns the same status object
+     */
+    public static Save(status: Status, path?: string) : Status {
+        path = path ? path : this.Path()
+        // convert to JSON string, ignore undefined values
+        let statusJson = JSON.stringify(status, null, 4)
+        // let statusJson = JSON.stringify(status, (key, val) => {
+        //     if (val !== undefined) {
+        //         return val
+        //     }
+        // }, 4)
+        writeFileSync(path, statusJson)
         return status
-    } catch(err) {
-        log.Error(`The file <red>${statusFile}</red> could not be properly parsed`)
-        exit(1)
-    }
-}
-
-export async function ReadStatusFromFile() : Promise<Status> {
-    let statusFile = GetStatusFile()
-    let fileContent = await fs.promises.readFile(statusFile)
-    try {
-        return JSON.parse(fileContent.toString())
-    } catch(err) {
-        log.Error(`The file <red>${statusFile}</red> could not be properly parsed`)
-        exit(1)
     }
 
-}
-//TODO: move to config/status
-export function GetStatusFile() {
-    let statusFile = GetStatusFileLocation()
-    if (statusFile === null) {
-        log.Error("The status file could not be located.\nSelect one of the following locations and there configure a <red>status.json</red> file:\n\n")
-        log.Error(Locations?.local)
-        exit(1)
+    /**
+     * 
+     * @returns the path of the status file
+     */
+    public static Path() : string {
+        let directory = this.Directory()
+        let path = `${directory}/status.json`
+        if (!existsSync(path)) {
+            // autoinitiating because a status file is always necessary
+            Status.InitStatus()
+        }
+        return path
     }
-    return statusFile
-}
 
-export async function UpdateStatusFile(status:any) {
-    await fs.promises.writeFile(GetStatusFile() ,JSON.stringify(status, null, 4))
-}
-export function UpdateStatusFileSync(status:any) {
-    fs.writeFileSync(GetStatusFile() ,JSON.stringify(status, null, 4))
-}
-
-export function GetStatusFileLocation() {
-    let localConfig = GetLocalConfigLocation()
-    if (!localConfig){
-        return null
+    /**
+     * 
+     * @returns the directory of the status file
+     */
+    public static Directory(): string {
+        // default directories, in order of priority
+        let localDir = ResolveUri('~/.config/derrik')
+        // if (!existsSync(localDir)) {
+        //     mkdirSync(localDir, { recursive: true })
+        // }
+        return localDir
     }
-    let statusFile = path.join(localConfig, 'status.json')
-    return statusFile
+    
+
+    /**
+     * 
+     * Generates a default status file in the default ~/.config/derrik folder
+     */
+    public static InitStatus(status?: Status) : Status {
+        let directory = ResolveUri("~/.config/derrik")
+        if (!existsSync(directory)) {
+            mkdirSync(directory, {recursive: true})
+        }
+        let statusPath = `${directory}/status.json`
+        if (!existsSync(statusPath)) {
+            return Status.Save(status ?? new Status(), ResolveUri(statusPath))
+        }
+        return Status.Load(statusPath)
+    }
 }

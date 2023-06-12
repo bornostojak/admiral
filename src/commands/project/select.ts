@@ -2,8 +2,8 @@ import fs, { stat } from 'fs'
 import logging from '../../logging'
 import { exit } from 'process'
 import yargs, { Options } from 'yargs'
-import { GetExistingProjects } from "../../config/projects"
-import { ReadStatusFromFileSync, ReadStatusFromFile, UpdateStatusFileSync, UpdateStatusFile, Status } from "../../config/status"
+import { ProjectConfig } from "../../config/projects"
+import { Status } from "../../config/status"
 
 let log = new logging("Select command")
 const DESELECT_SYMBOL = "^"
@@ -28,7 +28,7 @@ export async function ProcessCommand(args: string[]) {
     let projects : null|string|string[] = await processProjectsString(parsedArgs?._.slice(1).join(',')?.toString()) ?? null
     let select = projects.filter(p => !p.startsWith('^')).map(p => p.replace(SELECT_REGEX, '')) ?? []
     let deselect = select.length > 0 ? [] : projects?.filter(p => p.startsWith('^'))?.map(p => p.replace(DESELECT_REGEX, '')) ?? []
-    let status = await ReadStatusFromFile()
+    let status = Status.Load()
     
     log.Prefix("SELECTION").Trace({command, projectsString: parsedArgs?._[1]?.toString(), select, deselect, initialStatus: status})
 
@@ -49,13 +49,13 @@ export async function ProcessCommand(args: string[]) {
     }
     
     if (parsedArgs.show){
-        if (status?.active?.length > 0) {
+        if (status?.Active?.length > 0) {
             log.Trace("Printing active projects")
             if (parsedArgs?.line) {
-                log.Print(`${status?.active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
+                log.Print(`${status?.Active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
                 exit(0)
             }
-            log.Print(`Active projects: <green>${status?.active?.join(", ")}</green>` )
+            log.Print(`Active projects: <green>${status?.Active?.join(", ")}</green>` )
             exit(0)
         }
         log.Print("<red>There are currently no active projects</red>" )
@@ -63,7 +63,7 @@ export async function ProcessCommand(args: string[]) {
     }
     if (parsedArgs.deselect || command === 'deselect'){
         log.Debug("Deselecting...")
-        let completeDeselection = [... new Set([...select, ...deselect])].filter(p => status?.active?.includes(p))
+        let completeDeselection = [... new Set([...select, ...deselect])].filter(p => status?.Active?.includes(p))
         log.Trace({deselect: completeDeselection})
         await Deselect(completeDeselection, status)
         exit(0)
@@ -72,7 +72,7 @@ export async function ProcessCommand(args: string[]) {
     if (parsedArgs.all) {
         log.Debug("Selecting all projects")
         //select = GetProjectsFileSync().map(p => p?.name).filter(p => !deselect.includes(p))
-        select = (await GetExistingProjects()).map(d => d?.name).filter(p => !deselect.includes(p))
+        select = (ProjectConfig.List()).filter(p => !deselect.includes(p))
         log.Trace({prjectsAfterSelectAll: projects})
     }
 
@@ -95,11 +95,11 @@ export async function ProcessCommand(args: string[]) {
 async function processProjectsString(projectsString:string) : Promise<string[]> {
     if (!projectsString) return []
     log.Trace({projectsString})
-    let projects : string[] = projectsString?.includes(SELECT_SYMBOL) ? ReadStatusFromFileSync()?.active ?? [] : []
-    let existingProjects = await GetExistingProjects()
+    let projects : string[] = projectsString?.includes(SELECT_SYMBOL) ? Status.Load()?.Active ?? [] : []
+    let existingProjects = ProjectConfig.List()
     projects = [...projects, ...projectsString
         ?.split(',')
-        .map(f => f === 'all' ? existingProjects.map(p => p?.name) : f )
+        .map(f => f === 'all' ? existingProjects : f )
         .flat()
     ]
     return projects.filter((val, pos) => projects.indexOf(val) == pos 
@@ -109,11 +109,11 @@ async function processProjectsString(projectsString:string) : Promise<string[]> 
 
 export async function Select(projects:string[], status? : Status) {
     if (!status) {
-        status = await ReadStatusFromFile()
+        status = Status.Load()
     }
     await validateSelection(projects)
-    status['active'] = projects
-    await UpdateStatusFile(status)
+    status.Active = projects
+    Status.Save(status)
     log.Print(`Projects selected: <green>${projects.join(', ')}</green>`)
 }
 
@@ -129,13 +129,13 @@ async function validateSelection(projects:string[]) {
     log.Debug('Validating selection...')
     log.Trace({projects})
     try {
-        let definedProjects = await GetExistingProjects()
+        let definedProjects = ProjectConfig.List()
         if (!(definedProjects instanceof Array)) {
             log.Debug('<red>Validation FAILED.</red>')
             log.Error("Wrong syntax in <red>projects.json</red>!")
             exit(1)
         }
-        let undefinedProjects = projects?.filter(project => !definedProjects.map(s => s['name']).includes(project)) 
+        let undefinedProjects = projects?.filter(project => !definedProjects.includes(project)) 
         if (undefinedProjects?.length > 0) {
             log.Debug('<red>Validation FAILED.</red>')
             log.Print(`Undefined projects: <b><red>${undefinedProjects.join(", ")}</red></b>`, true)
@@ -152,7 +152,7 @@ async function validateSelection(projects:string[]) {
 
 
 
-export function DeselectSync(projects?:string[], status:any = ReadStatusFromFileSync()){
+export function DeselectSync(projects?:string[], status:any = Status.Load()){
     log.Trace({status, project: projects})
     if (status?.active?.length === 0) {
         log.Print("No project is currently active, nothing to do", true)
@@ -168,15 +168,15 @@ export function DeselectSync(projects?:string[], status:any = ReadStatusFromFile
         let finalDeselection = active?.filter(a => projects.includes(a))
         if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
         status.active = active.filter(p => !projects.includes(p))
-        UpdateStatusFileSync(status)
+        Status.Save(status)
         return
     }
     status['active'] = []
-    UpdateStatusFileSync(status)
+    Status.Save(status)
     log.Print('All projects have been deselected', true)
 }
 
-export async function Deselect(projects?:string[], status:any = ReadStatusFromFileSync()){
+export async function Deselect(projects?:string[], status:any = Status.Load()){
     log.Trace({status, project: projects})
     if (status?.active?.length === 0) {
         log.Print("No project is currently active, nothing to do", true)
@@ -192,11 +192,11 @@ export async function Deselect(projects?:string[], status:any = ReadStatusFromFi
         let finalDeselection = active?.filter(a => projects.includes(a))
         if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
         status.active = active.filter(p => !projects.includes(p))
-        await UpdateStatusFile(status)
+        Status.Save(status)
         return
     }
     status['active'] = []
-    await UpdateStatusFile(status)
+    Status.Save(status)
     log.Print('All projects have been deselected', true)
 }
 

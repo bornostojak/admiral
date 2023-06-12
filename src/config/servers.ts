@@ -3,7 +3,7 @@ import { GetLocalConfigLocation } from './manager'
 import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
-import { ReadStatusFromFile } from './status'
+import { Status } from './status'
 
 const log = new logging('Servers')
 
@@ -22,7 +22,7 @@ export interface Server {
 
 
 export async function GrabServers(project: string) : Promise<Array<Server>> {
-    let status = await ReadStatusFromFile()
+    let status = Status.Load()
     let serversFilePath =  path.join(GetLocalConfigLocation(), "projects", project, "servers.json")
     let serversFile = await fs.promises.readFile(serversFilePath)
     try {

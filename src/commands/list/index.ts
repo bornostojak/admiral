@@ -1,11 +1,7 @@
-import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status'
 import { exit } from 'process'
-import { GetExistingProjects, GetExistingProjectsSync } from '../../config/projects.js'
-import { GetLocalConfigLocation } from '../../config/manager.js'
-import path from 'path'
 
 let log = new logging("List")
 
@@ -19,7 +15,7 @@ export async function ProcessCommand(args: string[]){
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
     let command : string = parsedArgs?._.slice(0,1).join('')
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
-    let status = await ReadStatusFromFile()
+    let status = Status.Load()
 
     if(subcommand == 'help' || parsedArgs?.help || (command == "list" && args.length == 1)){
         PrintHelp()

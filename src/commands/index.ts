@@ -15,6 +15,7 @@ import { SSHCredentials } from "../config/ssh.js"
 import Config from "../config/manager.js"
 
 import LocalConfig from "../config/localConfig.js"
+import { Status } from "../config/status.js"
  
 const log = new logging("Command Parser")
 
@@ -27,6 +28,8 @@ export default async function ProcessArguments(args:string[]) {
     delete parsedArgs["$0"]
     delete parsedArgs["_"]
     log.Trace({command, subcommands, options: parsedArgs})
+    LocalConfig.InitLocalConfig()
+    Status.InitStatus()
     if (command === 'help') {
         PrintHelp()
     }
@@ -34,7 +37,7 @@ export default async function ProcessArguments(args:string[]) {
         case "a":
         case "active":
         case "selected":
-            Select.ProcessCommand(['select', '-s', ...args.filter(f => f != 'select')])
+            Select.ProcessCommand(['select', '-a', ...args.filter(f => f != 'select')])
             break
         case "config":
             await ConfigCmd.ProcessCommand(args)

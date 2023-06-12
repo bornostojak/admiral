@@ -1,9 +1,8 @@
 import fs from 'fs'
 import yargs, { Options, string } from 'yargs'
 import logging from '../../logging'
-import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status'
 import { exit } from 'process'
-import { GetExistingProjectsSync } from '../../config/projects.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 
@@ -24,7 +23,7 @@ export async function ProcessCommand(args: string[]){
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
     let command : string = parsedArgs?._.slice(0,1).join('')
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
-    let status = await ReadStatusFromFile()
+    let status = Status.Load()
 
     if(subcommand == 'help' || parsedArgs?.help){
         PrintHelp()
@@ -32,13 +31,13 @@ export async function ProcessCommand(args: string[]){
     }
 
     let servers = []
-    if (status?.active?.length < 1) {
+    if (status?.Active?.length < 1) {
         log.Debug("No active projects")
         log.Trace({status})
         log.Print("<b><red>No active projects detected!</red></b>")
         exit(0)
     }
-    for (let activeProject of status?.active) {
+    for (let activeProject of status?.Active) {
         let projectServersPath = path.join(GetLocalConfigLocation(), 'projects', activeProject, 'servers.json')
         if (!fs.existsSync(projectServersPath)) {
             log.Print(`<b>Project <red>${activeProject}</red> is missing the servers.json file.</b>`, true)
