@@ -1,6 +1,5 @@
 import logging from "../logging.js"
 import yargs from "yargs/yargs"
-import yargsParsed, { Options } from "yargs"
 
 import * as Select from './select'
 import * as Deploy from './deploy'
@@ -10,13 +9,8 @@ import * as Server from './server'
 import * as Project from './project'
 import * as ConfigCmd from './config'
 
-import * as jsonHelpers from './helpers/json'
-import { SSHCredentials } from "../config/ssh.js"
-import Config from "../config/manager.js"
-
 import LocalConfig from "../config/localConfig.js"
 import { Status } from "../config/status.js"
-import { readFileSync } from "fs"
 import ProjectConfig from "../config/project.js"
  
 const log = new logging("Command Parser")
@@ -113,6 +107,7 @@ export function PrintHelp() {
     log.Print("    <red>select</red>                  select one or more projects as active")
     log.Print()
     log.Print("  Management:")
+    // log.Print("    <red>docker</red>                  manage docker - like running docker on the server")
     log.Print("    <red>project</red>                 manage projects")
     log.Print("    <red>rack</red>                    manage racks")
     log.Print("    <red>server</red>                  manage servers")
