@@ -19,12 +19,17 @@ export function toTableString(obj: unknown, title?: false): string {
         for (let [key, content] of Object.entries(obj as { [key: string]: any[] })) {
             let tableString = toTableString(content)
             let rowLength = tableString.split('\n')[0].length
+            if (rowLength < 2) return ""
             final += `+${"-".repeat(rowLength - 2)}+\n`
             final += `| <cyan><b>${key}</b></cyan>${" ".repeat(rowLength - key.length - 3)}|\n`
             // final += `+${(new Array(rowLength-2)).join("-")}+\n`
             final += tableString
         }
         return ColorFormatting(final)
+    }
+
+    if (obj.length == 0) {
+        return ''
     }
 
     // convert each objects values into a string
