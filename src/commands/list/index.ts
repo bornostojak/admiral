@@ -1,9 +1,9 @@
 import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { GetStatusFile, ReadStatusFromFileSync } from '../../config/status'
+import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
 import { exit } from 'process'
-import { GetExistingProjectsSync } from '../../config/projects.js'
+import { GetExistingProjects, GetExistingProjectsSync } from '../../config/projects.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 import * as Servers from './servers'
@@ -15,15 +15,15 @@ export const CommandOptions : Record<string, Options> = {
     "list": {boolean: true, alias: 'l'},
 }
 
-export function ProcessCommand(args: string[]){
+export async function ProcessCommand(args: string[]){
     log.Trace({list_args:args})
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
     let command : string = parsedArgs?._.slice(0,1).join('')
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
-    let status = ReadStatusFromFileSync()
+    let status = await ReadStatusFromFile()
 
     if (subcommand == "servers") {
-        Servers.ProcessCommand(args.slice(1))
+        await Servers.ProcessCommand(args.slice(1))
         exit(0)
     }
 
@@ -36,7 +36,7 @@ export function ProcessCommand(args: string[]){
         log.Print("<b>Wrong arguments passed to <red>list</red> command!</b>")
         exit(1)
     }
-    let projects = GetExistingProjectsSync()
+    let projects = await GetExistingProjects()
     if (parsedArgs?.list) {
         projects.map(d => d?.name).forEach(p => {
             log.Print(`<cyan>${p}</cyan>`)
@@ -44,8 +44,6 @@ export function ProcessCommand(args: string[]){
         exit(0)
     }
     log.Print(['Existing projects: ', ...projects.map(f => `<cyan>${f?.name}</cyan>`)].join('\n  '))
-    //log.Print(`${projects}`)
-    //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
 }
 
 

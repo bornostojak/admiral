@@ -27,6 +27,12 @@ function validateProjectFile(projects:any) {
     return projects
 }
 
+export async function GetExistingProjects() : Promise<fs.Dirent[]> {
+    let dir = (await fs.promises.readdir(path.join(GetLocalConfigLocation(), "projects"), {withFileTypes: true}))
+                .filter(dirent => dirent.isDirectory())
+    return dir
+}
+
 export function GetExistingProjectsSync() : fs.Dirent[] {
     let dir = fs.readdirSync(path.join(GetLocalConfigLocation(), "projects"), {withFileTypes: true})
                 .filter(dirent => dirent.isDirectory())

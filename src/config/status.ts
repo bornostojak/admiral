@@ -7,7 +7,7 @@ import logging from '../logging'
 let log = new logging("Command Helpers")
 
 
-interface Status {
+export interface Status {
     active: string[]
 }
 
@@ -24,7 +24,7 @@ export function ReadStatusFromFileSync() : Status {
     }
 }
 
-export async function ReadStatusFromFile() {
+export async function ReadStatusFromFile() : Promise<Status> {
     let statusFile = GetStatusFile()
     let fileContent = await fs.promises.readFile(statusFile)
     try {

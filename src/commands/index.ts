@@ -26,14 +26,17 @@ export default async function ProcessArguments(args:string[]) {
         case "selected":
             Select.ProcessCommand(['select', '-s', ...args.filter(f => f != 'select')])
             break
+        case "deploy":
+            await Deploy.ProcessCommand(args)
+            break
         case "deselect":
-            Select.ProcessCommand(args)
+            await Select.ProcessCommand(args)
             break
         case "list":
-            List.ProcessCommand(args)
+            await List.ProcessCommand(args)
             break
         case "select":
-            Select.ProcessCommand(args)
+            await Select.ProcessCommand(args)
             break
         case "service":
             await Service.ProcessCommand(args)

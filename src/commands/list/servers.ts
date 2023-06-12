@@ -1,7 +1,7 @@
 import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { GetStatusFile, ReadStatusFromFileSync } from '../../config/status'
+import { GetStatusFile, ReadStatusFromFile, ReadStatusFromFileSync } from '../../config/status'
 import { exit } from 'process'
 import { GetExistingProjectsSync } from '../../config/projects.js'
 import { GetLocalConfigLocation } from '../../config/manager.js'
@@ -15,12 +15,12 @@ export const CommandOptions : Record<string, Options> = {
     "show": {boolean: true, alias: 's'},
 }
 
-export function ProcessCommand(args: string[]){
+export async function ProcessCommand(args: string[]){
     log.Trace({list_args:args})
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
     let command : string = parsedArgs?._.slice(0,1).join('')
     let subcommand : string = parsedArgs?._.slice(1,2).join('')
-    let status = ReadStatusFromFileSync()
+    let status = await ReadStatusFromFile()
 
     if(subcommand == 'help' || parsedArgs?.help){
         PrintHelp()
@@ -35,7 +35,7 @@ export function ProcessCommand(args: string[]){
             continue
         }
         log.Log(`server.json found for ${activeProject}`)
-        let activeProjectServer = JSON.parse(fs.readFileSync(projectServersPath).toString())
+        let activeProjectServer = JSON.parse((await fs.promises.readFile(projectServersPath)).toString())
         if (!parsedArgs.unveil && !parsedArgs.show) {
             for (let server of activeProjectServer) {
                 delete server.password
