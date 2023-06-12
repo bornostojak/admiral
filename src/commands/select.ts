@@ -2,7 +2,7 @@ import fs, { stat } from 'fs'
 import logging from '../logging'
 import { exit } from 'process'
 import yargs, { Options } from 'yargs'
-import { ProjectConfig } from "../config/projects"
+import ProjectConfig from "../config/project"
 import { Status } from "../config/status"
 
 let log = new logging("Select command")

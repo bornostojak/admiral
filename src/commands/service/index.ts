@@ -1,9 +1,5 @@
-import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
-import * as configManager from '../../config/manager'
-import * as projectsConfig from '../../config/projects'
 import { exit } from 'process'
 
 import * as List from './list'

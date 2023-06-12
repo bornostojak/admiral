@@ -7,7 +7,8 @@ import { ResolveUri } from '../helper/path'
 
 const log = new logging('Project configuration')
 
-export class ProjectConfig {
+
+export default class ProjectConfig {
     
     public Active: boolean = false;
     public Name: string = ""
@@ -86,11 +87,6 @@ export class ProjectConfig {
         return res
     }
 
-    public static GetAll(): ProjectConfig[] {
-        return ProjectConfig.List()
-            .map(p => ProjectConfig.LoadByName(p))
-            .map(p => p as ProjectConfig)
-    }
     public static GetProjects(options: {active: boolean}): ProjectConfig[] ;
     public static GetProjects(): ProjectConfig[] ;
     public static GetProjects(options?: {active: boolean}): ProjectConfig[] {
