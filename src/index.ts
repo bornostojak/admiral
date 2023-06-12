@@ -2,6 +2,7 @@ import { Client } from 'ssh2';
 import {fstat, readFileSync, unlinkSync} from 'fs';
 import net from "net";
 import { exit } from 'process';
+import log from './logging.js'
 
 let DOCKER_SOCKET = '/var/run/docker.sock'
 let LOCAL_SOCKET = '/tmp/docker.temp.sock'
@@ -10,10 +11,10 @@ let local_stream:net.Socket|null = null
 
 
 server = net.createServer((localStream) => {
-    console.log("Createing server..")
+    log("Createing server..")
     //stream.pipe(local_stream).pipe(stream);
     local_stream = localStream
-    console.log("Server Created")
+    log("Server Created")
 })
 .listen(LOCAL_SOCKET)
 .on('connection', () => {
@@ -21,7 +22,7 @@ server = net.createServer((localStream) => {
     conn2.on('ready', () => {
         conn2.openssh_forwardOutStreamLocal(DOCKER_SOCKET, (err, stream) => {
             if (err) {
-                console.log(err)
+                log(err)
                 return
             }
             if (local_stream)
@@ -37,19 +38,10 @@ server = net.createServer((localStream) => {
 
 })
 
-//import { createInterface } from 'readline';
-//const readline = createInterface({
-//    input: process.stdin,
-//    output: process.stdout
-//  });
-//
-//readline.question("STOP?", (yes:any) => {
-//    exit(1)
-//})
 
 try {
     process.on('SIGINT', (code) => {exit(1)})
-    process.on('exit', (code) => {unlinkSync(LOCAL_SOCKET); console.log('done')})
+    process.on('exit', (code) => {unlinkSync(LOCAL_SOCKET); log('done')})
 } catch {
-    console.log("Shit")
+    log("Shit")
 }
