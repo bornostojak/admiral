@@ -9,16 +9,16 @@ export function TableString(obj: Object, firstLevelHeading: boolean ) : String ;
 export function TableString(obj: Object, firstLevelHeading: boolean = false ) : String {
     let objArray : Object[]  = (obj instanceof Array) ? obj : [obj]
     let finalString = ""
-    let totalValueLengths : {[key: string]: number} = {}
+    let cellWidths : {[key: string]: number} = {}
     for (let item of objArray) {
         for (let [title, content] of Object.entries(item)) {
             // calculate the sizes of the table's cells
             for (let element of content) {
                 for (let [key, val] of Object.entries(element)) {
                     let parsedValue = val instanceof Array ? val.map(v => v instanceof String ? v : JSON.stringify(v)).join(', ') : (typeof val === "string" ? val : JSON.stringify(val))
-                    let maxOfNameAndValue = parsedValue.length > key.length ? parsedValue.length : key.length
-                    if ((totalValueLengths[(key as string)] ?? 0) < maxOfNameAndValue)
-                        totalValueLengths[(key as string)] =  maxOfNameAndValue
+                    let maxLengthOfNameAndValue = parsedValue.length > key.length ? parsedValue.length : key.length
+                    if ((cellWidths[(key as string)] ?? 0) < maxLengthOfNameAndValue)
+                        cellWidths[(key as string)] =  maxLengthOfNameAndValue
                 }
             }
         }
@@ -27,22 +27,22 @@ export function TableString(obj: Object, firstLevelHeading: boolean = false ) : 
     for (let item of objArray) {
         for (let [title, content] of Object.entries(item)) {
             // calculate the top table border
-            finalString += Object.values(totalValueLengths).map(x => '-'+(new Array(3+x)).join('-')).join('').replace(/^-/, "+")+"+\n"
+            finalString += Object.values(cellWidths).map(x => '-'+(new Array(3+x)).join('-')).join('').replace(/^-/, "+")+"+\n"
             // calculate the title with borders
-            finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(totalValueLengths).length*3 -title.length -1 + Object.values(totalValueLengths).reduce((a,b) => a+b))).join(' ') + '|\n'
+            finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(cellWidths).length*3 -title.length -1 + Object.values(cellWidths).reduce((a,b) => a+b))).join(' ') + '|\n'
             // calculate the headers
-            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
-            finalString += Object.entries(totalValueLengths).map(x => '| '+x[0][0].toUpperCase()+x[0].slice(1)+(new Array(2+x[1]-x[0].length)).join(' ')).join('') + '|\n'
-            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
+            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
+            finalString += Object.entries(cellWidths).map(x => '| '+x[0][0].toUpperCase()+x[0].slice(1)+(new Array(2+x[1]-x[0].length)).join(' ')).join('') + '|\n'
+            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
             // iterate over all entries
             for (var entry of content) {
-                for (let header of Object.keys(totalValueLengths)) {
+                for (let header of Object.keys(cellWidths)) {
                     let parsedValue = entry[header] instanceof Array ? (entry[header] as Array<any>).map(v => typeof v === "string" ? v : JSON.stringify(v)).join(', ') : (typeof entry[header] === "string" ? entry[header] : JSON.stringify(entry[header]))
-                    finalString += '| ' + (parsedValue ?? '') +(new Array(2 + totalValueLengths[header] - (parsedValue?.length ?? 0))).join(' ')
+                    finalString += '| ' + (parsedValue ?? '') +(new Array(2 + cellWidths[header] - (parsedValue?.length ?? 0))).join(' ')
                 }
                 finalString += "|\n"
             }
-            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n\n"
+            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n\n"
         }
     }
     return ColorFormatting(finalString)
