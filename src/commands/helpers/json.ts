@@ -1,14 +1,6 @@
 import logging, { Formatting as ColorFormatting } from '../../logging'
 import Colorizer from 'json-colorizer'
 
-export function ColorizedJSON(obj: object) {
-    return Colorizer(JSON.stringify(obj, null, 2))
-}
-
-function stringifyObjectValues(object: { [key: string]: any }): { [key: string]: string } {
-    return Object.fromEntries(Object.entries(object).map(([key, value]) => [key, ((value instanceof Array) ? value.map(v => typeof v === 'string' ? v : JSON.stringify(v, null, 0)).join(', ') : (typeof value === 'string' ? value : JSON.stringify(value, null, 0)))]))
-}
-
 /**
  * 
  * @param obj object array that will be stringified and populated in a table-looking string
@@ -121,4 +113,12 @@ function convertObjectToString(obj: Object): string {
         parsedString += dots + String(entry) + '\n'
     }
     return parsedString
+}
+
+export function ColorizedJSON(obj: object) {
+    return Colorizer(JSON.stringify(obj, null, 2))
+}
+
+function stringifyObjectValues(object: { [key: string]: any }): { [key: string]: string } {
+    return Object.fromEntries(Object.entries(object).map(([key, value]) => [key, ((value instanceof Array) ? value.map(v => typeof v === 'string' ? v : JSON.stringify(v, null, 0)).join(', ') : (typeof value === 'string' ? value : JSON.stringify(value, null, 0)))]))
 }
