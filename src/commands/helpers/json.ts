@@ -9,8 +9,8 @@ export function TableString(obj: Object, firstLevelHeading: boolean ) : String ;
 export function TableString(obj: Object, firstLevelHeading: boolean = false ) : String {
     let objArray : Object[]  = (obj instanceof Array) ? obj : [obj]
     let finalString = ""
+    let totalValueLengths : {[key: string]: number} = {}
     for (let item of objArray) {
-        let totalValueLengths : {[key: string]: number} = {}
         for (let [title, content] of Object.entries(item)) {
             // title = cws
             // content = info
@@ -23,7 +23,9 @@ export function TableString(obj: Object, firstLevelHeading: boolean = false ) : 
                 }
             }
         }
-        finalString+=''
+    }
+    finalString+=''
+    for (let item of objArray) {
         for (let [title, content] of Object.entries(item)) {
             finalString += Object.values(totalValueLengths).map(x => '-'+(new Array(3+x)).join('-')).join('')+"+\n"
             finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(totalValueLengths).length*3 -title.length -1 + Object.values(totalValueLengths).reduce((a,b) => a+b))).join(' ') + '|\n'
@@ -36,7 +38,7 @@ export function TableString(obj: Object, firstLevelHeading: boolean = false ) : 
             for (var entry of content) {
                 for (let header of Object.keys(totalValueLengths)) {
                     let parsedValue = entry[header] instanceof Array ? (entry[header] as Array<any>).map(v => typeof v === "string" ? v : JSON.stringify(v)).join(', ') : (typeof entry[header] === "string" ? entry[header] : JSON.stringify(entry[header]))
-                    finalString += '| ' + parsedValue+(new Array(2 + totalValueLengths[header] - parsedValue.length)).join(' ')
+                    finalString += '| ' + (parsedValue ?? '') +(new Array(2 + totalValueLengths[header] - (parsedValue?.length ?? 0))).join(' ')
                 }
                 finalString += "|\n"
             }
