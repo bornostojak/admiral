@@ -13,65 +13,73 @@ let log = new logging("Projects list")
 import * as helpers from '../helpers/index'
 import { toIndentedStringify } from '../helpers/json'
 
-export const CommandOptions : Record<string, Options> = {
-    "help": {boolean: true, alias: 'h'},
-    "list": {boolean: true, alias: 'l'},
-    "table": {boolean: true, alias: 't'},
-    "json": {boolean: true, alias: 'j'},
+export const CommandOptions: Record<string, Options> = {
+    "help": { boolean: true, alias: 'h' },
+    "list": { boolean: true, alias: 'l' },
+    "table": { boolean: true, alias: 't' },
+    "json": { boolean: true, alias: 'j' },
+    "status": { string: true }
 }
 
-export async function ProcessCommand(args: string[]){
-    log.Trace({list_args:args})
+export async function ProcessCommand(args: string[]) {
+    log.Trace({ list_args: args })
     let parsedArgs = yargs.help(false).options(CommandOptions).parse(args)
-    let command : string = parsedArgs?._.slice(0,1).join('')
-    let subcommand : string = parsedArgs?._.slice(1,2).join('')
+    let command: string = parsedArgs?._.slice(0, 1).join('')
+    let subcommand: string = parsedArgs?._.slice(1, 2).join('')
 
-    if(subcommand == 'help' || parsedArgs?.help){
+    if (subcommand == 'help' || parsedArgs?.help) {
         PrintHelp()
         exit(0)
     }
 
-    let projectNameArray = ProjectConfig.ListProjectNames()
+    let projects = ProjectConfig.GetProjects()
+    // filtering by status
+    if (parsedArgs.status) {
+        let validProjectStatusArray = Object.keys(ProjectStatus)
+        validProjectStatusArray = validProjectStatusArray.slice(validProjectStatusArray.length / 2);
+        let statusToFilterByArray = (parsedArgs.status as string).split(',')
+        // if a filter is not defined in the valid filters, log and abort
+        // so a filter other than
+        // - suspended
+        // - active
+        // - inactive
+        let invalidFilters = statusToFilterByArray.filter(f => !validProjectStatusArray.includes(f))
+        if (invalidFilters.length > 0) {
+            log.Error("The following are invalid project status filters:")
+            log.Error(`  ${invalidFilters.map(f => `<red>${f}</red>`).join('\n  ')}`)
+            exit(1)
+        }
+        projects = projects.filter(p => statusToFilterByArray.includes(ProjectStatus[p.Status]))
+    }
     if (parsedArgs?.list) {
-        projectNameArray.forEach(p => {
-            log.Print(`${p}`)
+        projects.forEach(p => {
+            log.Print(`${p.Name}`)
         })
         exit(0)
     }
-    // log.Print(['Existing projects: ', ...projects.map(f => `<cyan>${f?.name}</cyan>`)].join('\n  '))
-    let localConfigLocation = GetLocalConfigLocation()
-    let currentStatus = Status.Path()
-    if (!existsSync(`${localConfigLocation}/projects`)) {
-        log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${localConfigLocation}/projects"</cyan>`)
+    if (!existsSync(`${ProjectConfig.Directory()}`)) {
+        log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${ProjectConfig.Directory()}/projects"</cyan>`)
         exit(1)
     }
-    let projectStatusInfo : Record<string, string> = {}
     if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(projectNameArray
-            .map(p => ProjectConfig.LoadByName(p))
-            .filter(p => p !== null)
-            .map(p => (p as ProjectConfig).toJSON())))
+        log.Print(helpers.Json.ColorizedJSON(projects.map(p => p.toJSON())))
         exit(0)
     }
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(projectNameArray
-            .map(p => ProjectConfig.LoadByName(p))
-            .filter(p => p !== null)
-            .map(p => (p as ProjectConfig).toJSON())))
+        log.Print(helpers.Json.toTableString(projects.map(p => p.toJSON())))
         exit(0)
     }
 
-    let projectConfigArray = ProjectConfig.GetProjects()
-    let projectStatusArray = projectConfigArray.map(p => {
-        switch(p.Status) {
-            case ProjectStatus.active:    return [p.Name, `<green>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</green>`]
-            case ProjectStatus.inactive:  return [p.Name, `<red>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</red>`]
-            case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0,1).toUpperCase()+ProjectStatus[p.Status].slice(1)}</blue>`]
+    let projectStatusArray = projects.map(p => {
+        switch (p.Status) {
+            case ProjectStatus.active:    return [p.Name, `<green>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</green>`]
+            case ProjectStatus.inactive:  return [p.Name, `<red>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</red>`]
+            case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</blue>`]
 
         }
     })
     let statusesObject = Object.fromEntries(projectStatusArray)
-    log.Print(toIndentedStringify([statusesObject], {title: "Projects"}))
+    log.Print(toIndentedStringify([statusesObject], { title: "Projects" }))
     exit(0)
 }
 
@@ -87,5 +95,6 @@ function PrintHelp() {
     help.Print('OPTIONS:')
     help.Print('    -h, --help                 print help')
     help.Print('    -l, --list                 list only the existing projects')
+    help.Print('    --status                   list only project with the specified statuses, separated by a comma symbol (i.e. inactive,active)')
     help.Print('')
 }
