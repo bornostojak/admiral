@@ -34,8 +34,12 @@ export class ProjectConfig {
             if (!dirs.includes(project)) {
                 return null
             }
-            let projectPath = path.join(dirPath, project, 'project.json')
-            let projectConfig = this.fromJSON(readFileSync(projectPath).toString())
+            let projectConfigFilePath = path.join(dirPath, project, 'project.json')
+            let projectConfig: ProjectConfig;
+            if (!existsSync(projectConfigFilePath))
+                projectConfig = new ProjectConfig()
+            else
+                projectConfig = this.fromJSON(readFileSync(projectConfigFilePath).toString())
             projectConfig.Name = project
             projectConfig.Path = path.join(dirPath, project)
             return projectConfig
