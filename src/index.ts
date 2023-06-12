@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import bindRemoteSocketAsync from './connections/sockets.js' 
 import {unlinkSync} from "fs"
 import {exit, argv} from 'process'

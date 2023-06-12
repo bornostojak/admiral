@@ -1,8 +1,12 @@
 {
-  "name": "derrik",
+  "name": "admiral",
   "version": "0.1.0",
   "description": "",
   "main": "./dist/index.js",
+  "bin": {
+    "admiral": "./dist/index.js",
+    "adm": "./dist/index.js"
+  },
   "scripts": {
     "test": "node dist/connect.js",
     "connect_test": "node dist/connect",
@@ -23,6 +27,7 @@
     "@types/dotenv": "^8.2.0",
     "@types/js-yaml": "^4.0.5",
     "@types/node": "^18.11.10",
+    "@types/prompt-sync": "^4.2.0",
     "@types/yamljs": "^0.2.31",
     "@types/yargs": "^16.0.5",
     "pettier": "^1.1.0",
@@ -35,6 +40,7 @@
     "dotenv": "^16.0.3",
     "js-yaml": "^4.1.0",
     "json-colorizer": "^2.2.2",
+    "prompt-sync": "^4.2.0",
     "socket.io": "^4.5.4",
     "ssh2": "^1.11.0",
     "yamljs": "^0.3.0",
