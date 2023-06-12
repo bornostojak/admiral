@@ -1,4 +1,40 @@
 import Docker from 'dockerode'
+import logging from "./logging.js"
+import bindSocketAsync from './connections/bindSocket.js'
+import crypto from "crypto"
+
+let log = new logging("Docker management")
+
+export default async function connectToDockerOverSSH(sshConnectionParameters: object){
+    return new Promise<Docker>(async (resolve, reject) => {
+        try {
+            log.debug("Creating a bound socker...")
+            let localSocketPath = "/tmp/docker_"+crypto.randomUUID().slice(0,8)+".sock"
+            let remoteSocketPath =  "/var/run/docker.sock"
+            log.debug({localSocketPath, remoteSocketPath})
+            await bindSocketAsync(remoteSocketPath, localSocketPath, sshConnectionParameters)
+            log.log(`Remote socket bound to local socket <blue>${localSocketPath}</blue>`)
+            let node = new Docker({socketPath: localSocketPath})
+            log.debug("A node has successfully attached")
+            resolve(node)
+        } catch(err) {
+            log.error(err)
+            reject(err)
+        }
+
+        
+    } )
+    
+}
+export function getNodes(node: Docker) {
+    return new Promise((resolve, reject) => {
+        node.listNodes((err, nodes) => {
+            if (err)
+                reject(err)
+            resolve(nodes)
+        })
+    }).catch(null)
+}
 
 export function getServices(node: Docker) {
     return new Promise<Docker.Service[] | undefined>((resolve, reject) => {
@@ -20,6 +56,9 @@ export function getContainers(node: Docker) {
     }).catch(null)
 }
 
+export async function listNodeNames(node: Docker) {
+    return (<Array<object>> await getNodes(node))?.map(s => s["Description"]["Hostname"])?.flat().map(c => c?.replace(/^\//, ""))
+}
 export async function listServiceNames(node: Docker) {
     return (await getServices(node))?.map(s => s.Spec)?.map(s => s?.Name)
 }

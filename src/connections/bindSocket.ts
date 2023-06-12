@@ -7,9 +7,9 @@ let log = new logging("SOCKET BINDING")
 /**
  * bind a remote server's docker to a remote socket via SSH
  * */
-export default function bindSocketAsync(remoteSocketPath: string, localSocketPath: string, sshParameters:object) {    
-    log.log("REMOTE SOCKET PARAMETERS"+JSON.stringify({...sshParameters, ...{readyTimeout: 15000}}))
+export default async function bindSocketAsync(remoteSocketPath: string, localSocketPath: string, sshParameters:object) {    
     return new Promise<net.Server>((resolve, reject) => {
+        log.log("<blue>REMOTE SOCKET PARAMETERS</blue> <b>"+JSON.stringify({...sshParameters, ...{readyTimeout: 15000}})+"</b>")
         let server = net.createServer(() => {
             log.log(`Binding remote socket ${remoteSocketPath} to local socket ${localSocketPath} over ssh.`)
         })
@@ -19,7 +19,7 @@ export default function bindSocketAsync(remoteSocketPath: string, localSocketPat
             conn2.on('ready', () => {
                 conn2.openssh_forwardOutStreamLocal(remoteSocketPath, (err, remoteSocketStream) => {
                     if (err) {
-                        log.log(err)
+                        log.error(err)
                         reject(err)
                         return
                     }

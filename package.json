@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "node dist/connect.js",
+    "connect_test": "node dist/connect",
     "build": "tsc",
     "start": "node dist/index.js",
-    "startbg": "node dist/index.js &",
+    "background": "node dist/index.js &",
     "r": "npm run build && npm run startbg && sleep 3 && npm run test && killall node && rm /tmp/docker.temp.sock"
   },
   "type": "module",
