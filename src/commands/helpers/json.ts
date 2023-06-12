@@ -107,7 +107,8 @@ function convertObjectToString(obj: {[key: string]: any}): string {
             continue
         }
         if (content instanceof Object) {
-            parsedString += ':\n' + leftPadding(convertObjectToString(content)) + '\n'
+            // parsedString += ':\n' + leftPadding(convertObjectToString(content)) + '\n'
+            parsedString += spacing + JSON.stringify(content)+'\n'
             continue
         }
         parsedString += spacing + String(content) + '\n'
