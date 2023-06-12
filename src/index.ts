@@ -1,53 +1,55 @@
-import Docker from 'dockerode';
 import { Client } from 'ssh2';
 import {fstat, readFileSync, unlinkSync} from 'fs';
 import net from "net";
 import { exit } from 'process';
-import { Console } from 'console';
 
 let DOCKER_SOCKET = '/var/run/docker.sock'
 let LOCAL_SOCKET = '/tmp/docker.temp.sock'
 let server:any = null
 let local_stream:net.Socket|null = null
 
-try {
-    var conn = new Client();
-    conn.on('ready', function() {
-        console.log("Connection ready")
-        conn.openssh_forwardOutStreamLocal(DOCKER_SOCKET, (err, stream) => {
-        //console.log(err);
-        if (err) {
-            console.log(err)
-            exit(1)
-        }
-        if (server != null) return
-        server = net.createServer((str) => {
-            local_stream = str
-            console.log("Createing server..")
-            //stream.pipe(local_stream).pipe(stream);
-            console.log("Server Created")
-        })
-        .listen(LOCAL_SOCKET)
-        .on('connection', (kork) => {
-            console.log("Connecting to socket...")
-            if (local_stream != null)
-                stream.pipe(local_stream).pipe(stream)
 
+server = net.createServer((localStream) => {
+    console.log("Createing server..")
+    //stream.pipe(local_stream).pipe(stream);
+    local_stream = localStream
+    console.log("Server Created")
+})
+.listen(LOCAL_SOCKET)
+.on('connection', () => {
+    var conn2 = new Client()
+    conn2.on('ready', () => {
+        conn2.openssh_forwardOutStreamLocal(DOCKER_SOCKET, (err, stream) => {
+            if (err) {
+                console.log(err)
+                return
+            }
+            if (local_stream)
+                stream.pipe(local_stream).pipe(stream)
         })
-        });
     })
     .connect({
         host: '192.168.20.81',
         port: 22,
         username: 'root',
         password: 'bint123',
-    });
-} catch(err) {
-}
+    })
+
+})
+
+//import { createInterface } from 'readline';
+//const readline = createInterface({
+//    input: process.stdin,
+//    output: process.stdout
+//  });
+//
+//readline.question("STOP?", (yes:any) => {
+//    exit(1)
+//})
 
 try {
-    process.on('SIGINT', (code) => {unlinkSync(DOCKER_SOCKET); console.log('done')})
-    process.on('exit', (code) => {unlinkSync(DOCKER_SOCKET); console.log('done')})
+    process.on('SIGINT', (code) => {exit(1)})
+    process.on('exit', (code) => {unlinkSync(LOCAL_SOCKET); console.log('done')})
 } catch {
     console.log("Shit")
 }
