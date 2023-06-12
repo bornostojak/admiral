@@ -36,7 +36,7 @@ interface ISSH {
 }
 interface ILogging {
     level: number,
-    debug: boolean
+    debug: number|string
 }
 export default class Config {
     constructor() {
@@ -50,7 +50,7 @@ export default class Config {
     }
     public logging : null | ILogging = {
         level: 1,
-        debug: false,
+        debug: 0,
     }
 
 

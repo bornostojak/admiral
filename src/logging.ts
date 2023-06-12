@@ -13,7 +13,7 @@ export default class log{
     private static _joint = Boolean(stdout.isTTY) ? '' : ' > '
 
     private static _logLevel = parseInt(env["LOGLEVEL"] ?? (config?.logging?.level.toString() ?? '1'))
-    private static _debug = env["DEBUG"] !== undefined ? (!!env["DEBUG"] && env['DEBUG'] !== '0') : !!config?.logging?.debug 
+    private static _debug = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(config?.logging?.debug?.toString() ?? "0"))
 
 
 
@@ -33,7 +33,7 @@ export default class log{
         for (let i = 0; i < messages.length; i++) {
             parsed.push(colorWheel[i%colorWheel.length](log.op+messages[i]+log.ed+joiner))
         }
-        return this._logLevel > 0 ? log._joint+parsed.join(log._joint) : ''
+        return this._logLevel > 0 ? parsed.join(log._joint)+log._joint : ''
     }
 
     public static Colors(method:string) {
@@ -86,19 +86,27 @@ export default class log{
         this.logToFile(text, '')
     }
 
-    public Trace(message:any = "") {
-        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed))
+    public Info(message:any = "") {
+        let preString = log.rotBgColor(this._prefixes) + chalk.bgGreenBright(chalk.white(log.op+"INFO"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(text, "")
-        if (!log._debug) return
+        if (log._logLevel < 2) return
+        log.write(text, stdout)
+    }
+
+    public Trace(message:any = "") {
+        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed+log._joint))
+        let text = (ConvertToString(message, `${preString}`))
+        this.logToFile(text, "")
+        if (log._debug < 2) return
         log.write(text, stdout)
     }
 
     public Debug(message:any = "") {
-        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed))
+        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(text, "")
-        if (!log._debug) return
+        if (log._debug < 1) return
         log.write(text, stdout)
     }
 
