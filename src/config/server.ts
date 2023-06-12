@@ -88,7 +88,7 @@ export default class Server implements IServer {
                 CgroupVersion: this.Docker.CgroupVersion,
                 DaemonConfig: this.Docker.DaemonConfig,
             }
-        }).filter(([k, v]) => typeof v === "boolean" ? true : v ))
+        }))
     }
     public static fromJSON(jsonData: { [key: string]: any }): Server;
     public static fromJSON(jsonData: string): Server;

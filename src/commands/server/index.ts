@@ -6,6 +6,7 @@ import { exit } from 'process'
 import path from 'path'
 import Colorizer from 'json-colorizer'
 import * as List from './list'
+import * as Add from './add'
 import { clear } from 'console'
 
 let log = new logging("Server")
@@ -29,6 +30,11 @@ export async function ProcessCommand(args: string[]){
 
     if (subcommand == "list" || subcommand == "ls") {
         await List.ProcessCommand(args.slice(1))
+        exit(0)
+    }
+
+    if (subcommand == "add" ) {
+        await Add.ProcessCommand(args.slice(1))
         exit(0)
     }
 
