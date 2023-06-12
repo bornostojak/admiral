@@ -32,7 +32,6 @@ export default function bindSocket(remoteSocketPath: string, localSocketPath: st
             })
         })
         .connect(sshParameters)
-
     })
     server;
 }
