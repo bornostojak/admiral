@@ -2,7 +2,7 @@ import fs from 'fs'
 import docker from '../../docker.js'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { ReadStatusFromFileSync } from '../../config/status'
+import { Status } from '../../config/status.js'
 import { exit } from 'process'
 
 let log = new logging("<TEMPLATE>")
@@ -20,7 +20,7 @@ export function ProcessCommand(args: string[]){
         PrintHelp()
         exit(0)
     }
-    let status = ReadStatusFromFileSync()
+    let status = Status.Load()
     //let projects : null|string|string[] = processProjectsString(parsedArgs?._[1]?.toString()) ?? null
 }
 
@@ -28,9 +28,12 @@ export function ProcessCommand(args: string[]){
 function PrintHelp() {
     let help = log.Prefix('Help')
     help.Print('USAGE:')
+    help.Print('    <red><COMMAND></red> [OPTIONS]')
     help.Print('')
     help.Print('DESCRIPTION:')
+    help.Print('    <DESCRIPTION GOES HERE>.')
     help.Print('')
     help.Print('OPTIONS:')
+    help.Print('    -h, --help                 print help')
     help.Print('')
 }
