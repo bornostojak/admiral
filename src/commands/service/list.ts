@@ -6,7 +6,7 @@ import { Status } from '../../config/status'
 import { exit } from 'process'
 import path from 'path'
 import Config, { GetLocalConfigLocation } from '../../config/manager.js'
-import { GrabServers } from '../../config/servers.js'
+import { GrabServers } from '../../config/server.js'
 
 let log = new logging("Service List")
 

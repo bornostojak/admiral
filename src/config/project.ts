@@ -3,7 +3,7 @@ import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
 import { ResolveUri } from '../helper/path'
-import Server from './servers'
+import Server from './server'
 
 
 const log = new logging('Config(project)')

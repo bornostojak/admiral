@@ -5,7 +5,7 @@ import crypto from "crypto"
 import YAML from 'yamljs'
 import * as fs from 'fs';
 import * as path from 'path';
-import { IServerOld } from "./config/servers.js"
+import { IServerOld } from "./config/server.js"
 import Config from "./config/manager.js"
 
 let log = new logging("Docker management")
