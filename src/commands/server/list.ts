@@ -63,7 +63,8 @@ export async function ProcessCommand(args: string[]){
         exit(0)
     }
     if (parsedArgs.table) {
-        log.Print(helpers.Json.TableString(servers))
+        // log.Print(helpers.Json.TableString(servers))
+        log.Print(servers.map(s => helpers.Json.toTableString(s))?.reduce((a, b) => a+'\n'+b))
         exit(0)
     }
     for (let project of servers) {

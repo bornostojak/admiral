@@ -4,48 +4,69 @@ import Colorizer from 'json-colorizer'
 export function Colorized(obj: object) {
     return Colorizer(JSON.stringify(obj, null, 2))
 }
-export function TableString(obj: Object) : String;
-export function TableString(obj: Object, firstLevelHeading: boolean ) : String ;
-export function TableString(obj: Object, firstLevelHeading: boolean = false ) : String {
-    let objArray : Object[]  = (obj instanceof Array) ? obj : [obj]
-    let finalString = ""
-    let cellWidths : {[key: string]: number} = {}
-    for (let item of objArray) {
-        for (let [title, content] of Object.entries(item)) {
-            // calculate the sizes of the table's cells
-            for (let element of content) {
-                for (let [key, val] of Object.entries(element)) {
-                    let parsedValue = val instanceof Array ? val.map(v => v instanceof String ? v : JSON.stringify(v)).join(', ') : (typeof val === "string" ? val : JSON.stringify(val))
-                    let maxLengthOfNameAndValue = parsedValue.length > key.length ? parsedValue.length : key.length
-                    if ((cellWidths[(key as string)] ?? 0) < maxLengthOfNameAndValue)
-                        cellWidths[(key as string)] =  maxLengthOfNameAndValue
-                }
-            }
+
+function stringifyObjectValues(object: { [key: string]: any }): { [key: string]: string } {
+    return Object.fromEntries(Object.entries(object).map(([key, value]) => [key, ((value instanceof Array) ? value.map(v => typeof v === 'string' ? v : JSON.stringify(v, null, 0)).join(', ') : (typeof value === 'string' ? value : JSON.stringify(value, null, 0)))]))
+}
+
+export function toTableString(obj: Object[]): string;
+export function toTableString({ ...obj }: { [key: string]: Object }): string;
+export function toTableString(obj: unknown, title?: false): string {
+    if (!(obj instanceof Array)) {
+        let final = ''
+        for (let [key, content] of Object.entries(obj as { [key: string]: any[] })) {
+            let tableString = toTableString(content)
+            let rowLength = tableString.split('\n')[0].length
+            final += `+${"-".repeat(rowLength-2)}+\n`
+            final += `| <cyan><b>${key}</b></cyan>${" ".repeat(rowLength - key.length - 3)}|\n`
+            // final += `+${(new Array(rowLength-2)).join("-")}+\n`
+            final += tableString
         }
+        return ColorFormatting(final)
     }
-    finalString+=''
-    for (let item of objArray) {
-        for (let [title, content] of Object.entries(item)) {
-            // calculate the top table border
-            finalString += Object.values(cellWidths).map(x => '-'+(new Array(3+x)).join('-')).join('').replace(/^-/, "+")+"+\n"
-            // calculate the title with borders
-            finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(cellWidths).length*3 -title.length -1 + Object.values(cellWidths).reduce((a,b) => a+b))).join(' ') + '|\n'
-            // calculate the headers
-            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
-            finalString += Object.entries(cellWidths).map(x => '| '+x[0][0].toUpperCase()+x[0].slice(1)+(new Array(2+x[1]-x[0].length)).join(' ')).join('') + '|\n'
-            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
-            // iterate over all entries
-            for (var entry of content) {
-                for (let header of Object.keys(cellWidths)) {
-                    let parsedValue = entry[header] instanceof Array ? (entry[header] as Array<any>).map(v => typeof v === "string" ? v : JSON.stringify(v)).join(', ') : (typeof entry[header] === "string" ? entry[header] : JSON.stringify(entry[header]))
-                    finalString += '| ' + (parsedValue ?? '') +(new Array(2 + cellWidths[header] - (parsedValue?.length ?? 0))).join(' ')
-                }
-                finalString += "|\n"
-            }
-            finalString += Object.values(cellWidths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n\n"
+
+    // convert each objects values into a string
+    let srcObjectWithStringifiedValuesArray: { [key: string]: string }[] = (obj as { [key: string]: any }[]).map(o => stringifyObjectValues(o))
+
+    // from an object array with similar keys [{..}, {..}, {..}]
+    // reduce them to to an object {[key:string]: value: number}
+    // where the value is the largest length of all that specific
+    // key's values in the object array
+    let maxLengthArray: { [key: string]: any }[] = srcObjectWithStringifiedValuesArray
+        ?.map(o => Object.fromEntries(
+            Object.entries(o)
+                .map(([x, y]) => [x, y.length > String(x).length ? y.length : String(x).length])
+        ))
+    let cellWidthByHeader = maxLengthArray.reduce((res, o) => {
+        for (let key of [...Object.keys(res), ...Object.keys(o)]) {
+            if (!res[key] || res[key] < o[key]) res[key] = o[key]
         }
+        return res
+    })
+    // define the border, which goes between the rows
+    let border = '+' + Object.values(cellWidthByHeader).map(l => "-".repeat(l + 2)).join("+") + "+\n"
+
+    // headers
+    let headers = Object.entries(cellWidthByHeader).map(([header, width]) => `| ${header}${' '.repeat(width - header.length + 1)}`).join('') + '|\n'
+    // defining the header row 
+    let tableString = border + headers + border.replace(/-/g, "=")
+    // iterating over the elements to define each row
+    for (let rowObject of srcObjectWithStringifiedValuesArray) {
+        for (let [header, cellWidth] of Object.entries(cellWidthByHeader)) {
+            // if the current "header" is not in this object, fill cell with empty space, then continue
+            if (!Object.keys(rowObject).includes(header)) {
+                tableString += '| ' + ' '.repeat(cellWidth + 1)
+                continue
+            }
+            let cellValue = rowObject[header]
+            tableString += `| ${cellValue}${' '.repeat(cellWidth - cellValue.length )} `
+        }
+        // finish the row string an continue to the next row
+        tableString += "|\n"
+        tableString += border
     }
-    return ColorFormatting(finalString)
+    return tableString
+
 }
 export function IndentedStringify(obj: object, heading?: {title: string, value?: string}, level: number = 0) {
     let finalString = ""

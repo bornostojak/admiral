@@ -15,6 +15,7 @@ import * as helpers from '../helpers/index'
 export const CommandOptions : Record<string, Options> = {
     "help": {boolean: true, alias: 'h'},
     "list": {boolean: true, alias: 'l'},
+    "table": {boolean: true, alias: 't'},
 }
 
 export async function ProcessCommand(args: string[]){
@@ -27,7 +28,6 @@ export async function ProcessCommand(args: string[]){
         PrintHelp()
         exit(0)
     }
-
 
     let projects = ProjectConfig.List()
     if (parsedArgs?.list) {
@@ -44,13 +44,17 @@ export async function ProcessCommand(args: string[]){
         exit(1)
     }
     let projectStatusInfo : Record<string, string> = {}
+    if (parsedArgs.table) {
+        log.Print(helpers.Json.toTableString(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
+        exit(0)
+    }
     for (let projectName of projects) {
         let projectInfoPath = `${localConfigLocation}/projects/${projectName}/project.json`
         if (!existsSync(projectInfoPath)) {
         }
         try {
             let projectInfo = JSON.parse(fs.readFileSync(projectInfoPath).toString())
-            if (projectInfo["active"].toString() === "true") {
+            if (projectInfo.Active.toString() === "true") {
                 projectStatusInfo[projectName] = Formatting("<green><b>Active</b></green>")
                 // if (currentStatus.Active.includes(projectName)) {
                 //     projectStatusInfo[projectName] += ' <green><b> (Selected)</b></green>'

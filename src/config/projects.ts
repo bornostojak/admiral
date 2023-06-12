@@ -1,4 +1,4 @@
-import fs, { existsSync, mkdirSync, readdirSync } from 'fs'
+import fs, { existsSync, mkdirSync, readFileSync, readSync, readdirSync, writeFile, writeFileSync } from 'fs'
 import { GetLocalConfigLocation } from './manager'
 import logging from '../logging'
 import { exit } from 'process'
@@ -9,7 +9,60 @@ const log = new logging('Project configuration')
 
 export class ProjectConfig {
     
+    public Active: boolean = false;
+    public Name: string = ""
+    public Path: string = ""
     
+    
+    
+    public Save(project?: string) : void {
+        try {
+            let { Path, Name, ...projectConfig } = this.toJSON()
+            Path = Path ? Path : path.join(ProjectConfig.Directory(), project ?? Name)
+            writeFileSync(Path, JSON.stringify(projectConfig, (key, val) => {if (val !== undefined) return val}, 4))
+        } catch(err) {
+            log.Log("Failed to save project configuration")
+            log.Log(err)
+            exit(1)
+        }
+    }
+
+    public static LoadByName(project: string) : ProjectConfig | null {
+        try {
+            let dirPath = this.Directory()
+            let dirs = this.List()
+            if (!dirs.includes(project)) {
+                return null
+            }
+            let projectPath = path.join(dirPath, project, 'project.json')
+            let projectConfig = this.fromJSON(readFileSync(projectPath).toString())
+            projectConfig.Name = project
+            projectConfig.Path = path.join(dirPath, project)
+            return projectConfig
+        } catch(err) {
+            log.Log("Failed to load project configuration")
+            log.Log(err)
+            return null
+        }
+
+    }
+
+    public toJSON() {
+        return {
+            Name: this.Name,
+            Active: this.Active,
+            Path: this.Path
+        }
+    }
+
+    private static fromJSON(jsonData: string) : ProjectConfig {
+        let jsonParsed = JSON.parse(jsonData)
+        log.Trace({ jsonData })
+        let tmp = new ProjectConfig()
+        tmp.Active = jsonParsed?.Active
+        return tmp
+    }
+
     public static Directory() {
         let projectsPath = ResolveUri("~/.config/derrik/projects")
         if (!existsSync(projectsPath)) {
