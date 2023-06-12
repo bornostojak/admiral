@@ -12,8 +12,7 @@ export function TableString(obj: Object, firstLevelHeading: boolean = false ) : 
     let totalValueLengths : {[key: string]: number} = {}
     for (let item of objArray) {
         for (let [title, content] of Object.entries(item)) {
-            // title = cws
-            // content = info
+            // calculate the sizes of the table's cells
             for (let element of content) {
                 for (let [key, val] of Object.entries(element)) {
                     let parsedValue = val instanceof Array ? val.map(v => v instanceof String ? v : JSON.stringify(v)).join(', ') : (typeof val === "string" ? val : JSON.stringify(val))
@@ -27,14 +26,15 @@ export function TableString(obj: Object, firstLevelHeading: boolean = false ) : 
     finalString+=''
     for (let item of objArray) {
         for (let [title, content] of Object.entries(item)) {
-            finalString += Object.values(totalValueLengths).map(x => '-'+(new Array(3+x)).join('-')).join('')+"+\n"
+            // calculate the top table border
+            finalString += Object.values(totalValueLengths).map(x => '-'+(new Array(3+x)).join('-')).join('').replace(/^-/, "+")+"+\n"
+            // calculate the title with borders
             finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(totalValueLengths).length*3 -title.length -1 + Object.values(totalValueLengths).reduce((a,b) => a+b))).join(' ') + '|\n'
-            // finalString += `  ${title}\n`
+            // calculate the headers
             finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
             finalString += Object.entries(totalValueLengths).map(x => '| '+x[0][0].toUpperCase()+x[0].slice(1)+(new Array(2+x[1]-x[0].length)).join(' ')).join('') + '|\n'
             finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
-            // title = cws
-            // content = info
+            // iterate over all entries
             for (var entry of content) {
                 for (let header of Object.keys(totalValueLengths)) {
                     let parsedValue = entry[header] instanceof Array ? (entry[header] as Array<any>).map(v => typeof v === "string" ? v : JSON.stringify(v)).join(', ') : (typeof entry[header] === "string" ? entry[header] : JSON.stringify(entry[header]))
