@@ -19,7 +19,7 @@ export default class ProjectConfig {
     public Path: string = ""
     
     private constructor() {
-        
+
     }
 
 
@@ -63,7 +63,7 @@ export default class ProjectConfig {
         return {
             Name: this.Name,
             Status: ProjectStatus[this.Status],
-            Path: this.Path
+            Path: this.Path.replace(ResolveUri('~'), '~')
         }
     }
 
@@ -88,6 +88,9 @@ export default class ProjectConfig {
             }
         } catch {
             tmp.Status = ProjectStatus.inactive
+        }
+        if ("Path" in jsonParsed) {
+            tmp.Path = ResolveUri(jsonParsed.Path)
         }
         return tmp
     }
