@@ -84,7 +84,7 @@ export function toTableString(obj: unknown, title?: false): string {
  * @param heading the object containing the title and title value information
  * @returns the string converted into an tab indented format
  */
-export function IndentedStringify(obj: object, heading?: { title: string, value?: string }) {
+export function toIndentedStringify(obj: object, heading?: { title: string, value?: string }) {
     let finalString = ""
     if (heading && "title" in heading) {
         let Header = `<b>${heading.title}</b>`
