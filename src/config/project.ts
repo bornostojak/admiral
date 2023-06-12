@@ -35,10 +35,12 @@ export default class ProjectConfig {
         try {
             let { Path, Name, ...projectConfig } = this.toJSON()
             Path = Path ? Path : path.join(ProjectConfig.Directory(), project ?? Name)
-            writeFileSync(Path, JSON.stringify(projectConfig, (key, val) => { if (val !== undefined) return val }, 4))
+            Path = ResolveUri(Path)
+            writeFileSync(Path, JSON.stringify(projectConfig, (key, val) => { if (val !== undefined) return val }, 4), { flag: "a+" })
         } catch (err) {
-            log.Log("Failed to save project configuration")
-            log.Log(err)
+            log.Error("Failed to save project configuration")
+            log.Error((err as Error).message)
+            log.Trace(err)
             exit(1)
         }
     }
@@ -66,6 +68,27 @@ export default class ProjectConfig {
             return null
         }
 
+    }
+    
+
+    public static Init(project: string) {
+        try {
+            let projectConfig = new ProjectConfig()
+            projectConfig.Name = project
+            let projectPath = path.join(ProjectConfig.Directory(), project)
+            if (!existsSync(projectPath)) {
+                mkdirSync(projectPath, { recursive: true })
+            }
+            projectConfig.Path = path.join(projectPath, "project.json")
+            log.Debug(`Initiating a new project.json file for for the new project ${project}`)
+            projectConfig.Save()
+            log.Debug(`project.json file initialization completed successfully`)
+        } catch(err) {
+            log.Error(`An error occurred during the process of the initialization of the ProjectConfig for project ${project}`)
+            log.Error((err as Error).message)
+            log.Trace(err)
+            exit(1)
+        }
     }
 
     public toJSON() {

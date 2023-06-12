@@ -5,6 +5,7 @@ import { Status } from '../../config/status'
 import { exit } from 'process'
 import * as List from './list'
 import * as Select from './select'
+import * as Init from './init'
 
 let log = new logging("Project")
 
@@ -28,6 +29,9 @@ export async function ProcessCommand(args: string[]){
         case "selected":
             await Select.ProcessCommand(['select', '-s', ...args.filter(f => f != 'select')])
             break
+        case "init":
+            await Init.ProcessCommand(args.slice(1))
+            break;
         case "ls":
         case "list":
             await List.ProcessCommand(args.slice(1))
@@ -61,6 +65,7 @@ function PrintHelp() {
     help.Print('COMMANDS:')
     help.Print('    <red>active, selected</red>           list active projects')
     help.Print('    <red>deselect</red>                   deselect one or more projects')
+    help.Print('    <red>init</red>                       initiate an empty new project')
     help.Print('    <red>list, ls</red>                   list existing projects')
     help.Print('    <red>select</red>                     select one or more projects')
     help.Print('')
