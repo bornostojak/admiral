@@ -16,6 +16,7 @@ export const CommandOptions : Record<string, Options> = {
     "help": {boolean: true, alias: 'h'},
     "list": {boolean: true, alias: 'l'},
     "table": {boolean: true, alias: 't'},
+    "json": {boolean: true, alias: 'j'},
 }
 
 export async function ProcessCommand(args: string[]){
@@ -44,6 +45,10 @@ export async function ProcessCommand(args: string[]){
         exit(1)
     }
     let projectStatusInfo : Record<string, string> = {}
+    if (parsedArgs.json) {
+        log.Print(helpers.Json.Colorized(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
+        exit(0)
+    }
     if (parsedArgs.table) {
         log.Print(helpers.Json.toTableString(projects.map(p => ProjectConfig.LoadByName(p) ?? new ProjectConfig()).map(f => f.toJSON())))
         exit(0)
