@@ -4,7 +4,7 @@ import chalk, { Chalk } from 'chalk'
 import { inspect } from 'util'
 import LoggingConfig from './config/logging'
 
-let loggingConfig = LoggingConfig.Load()
+var loggingConfig = LoggingConfig.Load()
 
 export default class log{
 
@@ -14,8 +14,8 @@ export default class log{
 
     // private static _logLevel = parseInt(env["LOGLEVEL"] ?? (loggingConfig?.Level.toString() ?? '1'))
     // private static _debug = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(loggingConfig.Level?.debug?.toString() ?? "0"))
-    private static _logLevel = parseInt(env["LOGLEVEL"] ?? (loggingConfig?.Level.toString() ?? '1'))
-    private static _depth = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(loggingConfig.Depth?.toString() ?? "0"))
+    private static _logLevel = env["LOGLEVEL"] ? parseInt(env["LOGLEVEL"]) : loggingConfig.Level
+    private static _depth = 0 + (env["DEBUG"] != null ? (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : 0) : loggingConfig.Depth)
 
 
 
