@@ -52,9 +52,9 @@ export async function ProcessCommand(args: string[]){
             let projectInfo = JSON.parse(fs.readFileSync(projectInfoPath).toString())
             if (projectInfo["active"].toString() === "true") {
                 projectStatusInfo[projectName] = Formatting("<green><b>Active</b></green>")
-                if (currentStatus.Active.includes(projectName)) {
-                    projectStatusInfo[projectName] += ' <green><b> (Selected)</b></green>'
-                }
+                // if (currentStatus.Active.includes(projectName)) {
+                //     projectStatusInfo[projectName] += ' <green><b> (Selected)</b></green>'
+                // }
                 continue
             }
             projectStatusInfo[projectName] = Formatting("<red><b>Inactive</b></red>")
