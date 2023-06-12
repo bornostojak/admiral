@@ -34,6 +34,7 @@ export default class Config {
 
 
     public static LoadFromStringSync(configString: string) {
+        configString = configString.replace('"private_key"', '"privateKey"').replace('"public_key"', '"publicKey"')
         let parsed = yaml.load(configString) as any
         let tmp = new Config()
         
@@ -65,7 +66,7 @@ export default class Config {
     }
 
     public static GetLocalConfigSync() {
-        let configFile = Config.GetLocalConfigFilesSync(['config.yaml']).slice(0).join()
+        let configFile = Config.GetLocalConfigFilesSync(['config.json']).slice(0).join()
         if (configFile) {
             //log(`Loading from file: <blue>${configFile}</blue>`)
             let config = Config.LoadFromStringSync(fs.readFileSync(configFile).toString())
@@ -75,7 +76,7 @@ export default class Config {
     public static GetLocalConfig() {
         return new Promise<Config>(async (res, rej) => {
             try {
-                let configFile = (await Config.GetLocalConfigFiles(['config.yaml'])).slice(0).join()
+                let configFile = (await Config.GetLocalConfigFiles(['config.json'])).slice(0).join()
                 if (configFile) {
                     //log(`Loading from file: <blue>${configFile}</blue>`)
                     let config = Config.LoadFromString((await fs.promises.readFile(configFile)).toString())
