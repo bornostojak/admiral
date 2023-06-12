@@ -15,7 +15,7 @@ const SELECT_REGEX = /^\+/
 export const CommandOptions : Record<string, Options> = {
     "all": {boolean: true, alias: 'a'},
     "help": {boolean: true, alias: 'h'},
-    "show": {boolean: true, alias: 's'},
+    "active": {boolean: true, alias: 'a'},
     "deselect": {boolean: true, alias: 'd'},
     "line": {boolean: true, alias: 'l'},
 }
@@ -48,19 +48,20 @@ export async function ProcessCommand(args: string[]) {
         }
     }
     
-    if (parsedArgs.show){
+    if (parsedArgs.active){
         if (status?.Active?.length > 0) {
             log.Trace("Printing active projects")
             if (parsedArgs?.line) {
                 log.Print(`${status?.Active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
                 exit(0)
             }
-            log.Print(`Active projects: <green>${status?.Active?.join(", ")}</green>` )
+            log.Print(`<green><b>Active projects</b>:</green> ${status?.Active?.join(", ")}` )
             exit(0)
         }
         log.Print("<red>There are currently no active projects</red>" )
         exit(1)
     }
+
     if (parsedArgs.deselect || command === 'deselect'){
         log.Debug("Deselecting...")
         let completeDeselection = [... new Set([...select, ...deselect])].filter(p => status?.Active?.includes(p))
@@ -72,8 +73,8 @@ export async function ProcessCommand(args: string[]) {
     if (parsedArgs.all) {
         log.Debug("Selecting all projects")
         //select = GetProjectsFileSync().map(p => p?.name).filter(p => !deselect.includes(p))
-        select = (ProjectConfig.ListProjectNames()).filter(p => !deselect.includes(p))
-        log.Trace({prjectsAfterSelectAll: projects})
+        select = ProjectConfig.ListProjectNames().filter(p => !deselect.includes(p))
+        log.Trace({projectsAfterSelectAll: projects})
     }
 
     if (select.length == 0) {
@@ -114,7 +115,7 @@ export async function Select(projects:string[], status? : Status) {
     await validateSelection(projects)
     status.Active = projects
     Status.Save(status)
-    log.Print(`Projects selected: <green>${projects.join(', ')}</green>`)
+    log.Print(`<green><b>Projects selected:</b></green> ${projects.join(', ')}`)
 }
 
 /**
@@ -138,7 +139,7 @@ async function validateSelection(projects:string[]) {
         let undefinedProjects = projects?.filter(project => !definedProjects.includes(project)) 
         if (undefinedProjects?.length > 0) {
             log.Debug('<red>Validation FAILED.</red>')
-            log.Print(`Undefined projects: <b><red>${undefinedProjects.join(", ")}</red></b>`, true)
+            log.Print(`<yellow>Undefined projects:</yellow> <b>${undefinedProjects.join(", ")}</b>`, true)
             exit(1)
         }
     } catch (err) {
@@ -152,50 +153,50 @@ async function validateSelection(projects:string[]) {
 
 
 
-export function DeselectSync(projects?:string[], status:any = Status.Load()){
+export function DeselectSync(projects?:string[], status:Status = Status.Load()){
     log.Trace({status, project: projects})
-    if (status?.active?.length === 0) {
+    if (status?.Active?.length === 0) {
         log.Print("No project is currently active, nothing to do", true)
         return
     }
     if (projects && projects.length > 0) {
-        let active : string[] = status['active'] instanceof Array ? status.active : [status.active]
+        let active : string[] = status.Active instanceof Array ? status.Active : [status.Active]
         projects.forEach(p => {
             if (!active.includes(p))
-            log.Print(`Not active: <red>${p}</red>`, true)
+            log.Print(`<red><b>Not active:</b></red> ${p}`, true)
         })
 
         let finalDeselection = active?.filter(a => projects.includes(a))
-        if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
-        status.active = active.filter(p => !projects.includes(p))
+        if (finalDeselection?.length > 0) log.Print(`<yellow><b>Deselecting projects:</b></yellow> ${finalDeselection.join(', ')}`, true)
+        status.Active = active.filter(p => !projects.includes(p))
         Status.Save(status)
         return
     }
-    status['active'] = []
+    status.Active = []
     Status.Save(status)
     log.Print('All projects have been deselected', true)
 }
 
-export async function Deselect(projects?:string[], status:any = Status.Load()){
+export async function Deselect(projects?:string[], status:Status = Status.Load()){
     log.Trace({status, project: projects})
-    if (status?.active?.length === 0) {
+    if (status?.Active?.length === 0) {
         log.Print("No project is currently active, nothing to do", true)
         return
     }
     if (projects && projects.length > 0) {
-        let active : string[] = status['active'] instanceof Array ? status.active : [status.active]
+        let active : string[] = status.Active instanceof Array ? status.Active : [status.Active]
         projects.forEach(p => {
             if (!active.includes(p))
-            log.Print(`Not active: <red>${p}</red>`, true)
+            log.Print(`<red><b>Not active:</b></red> ${p}`, true)
         })
 
         let finalDeselection = active?.filter(a => projects.includes(a))
-        if (finalDeselection?.length > 0) log.Print(`Deselecting projects: <blue>${finalDeselection.join(', ')}</blue>`, true)
-        status.active = active.filter(p => !projects.includes(p))
+        if (finalDeselection?.length > 0) log.Print(`<yellow><b>Deselecting projects:</b></yellow> ${finalDeselection.join(', ')}`, true)
+        status.Active = active.filter(p => !projects.includes(p))
         Status.Save(status)
         return
     }
-    status['active'] = []
+    status.Active = []
     Status.Save(status)
     log.Print('All projects have been deselected', true)
 }
@@ -205,13 +206,13 @@ export async function Deselect(projects?:string[], status:any = Status.Load()){
 function PrintHelp() {
     let help = log.Prefix('Help')
     help.Print('USAGE:')
-    help.Print('  <red>mob select</red> [OPTIONS]')
-    help.Print('  <red>mob select</red> PROJECT [OPTIONS]')
-    help.Print('  <red>mob select</red> PROJECT1,PROJECT2,.. [OPTIONS]')
+    help.Print('  <red>admiral project select</red> [OPTIONS]')
+    help.Print('  <red>admiral project select</red> PROJECT [OPTIONS]')
+    help.Print('  <red>admiral project select</red> PROJECT1,PROJECT2,.. [OPTIONS]')
     //log.Print('')
     //log.Print('  special case:')
-    help.Print('  <red>mob select</red> <b><green>all</green></b>,... [OPTIONS]')
-    help.Print('  <red>mob select</red> <b><green>+PROJECT1</green></b>,<b><blue>^PROJECT2</blue></b>... [OPTIONS]')
+    help.Print('  <red>admiral project select</red> <b><green>all</green></b>,... [OPTIONS]')
+    help.Print('  <red>admiral project select</red> <b><green>+PROJECT1</green></b>,<b><blue>^PROJECT2</blue></b>... [OPTIONS]')
     help.Print('')
     help.Print('DESCRIPTION:')
     help.Print('  Select one or multiple projects and designate them as <red>active</red>')
@@ -224,19 +225,21 @@ function PrintHelp() {
     help.Print(`  -d, --deselect    - deselect the currently active project`)
     help.Print(`  -h, --help        - print the help message`)
     help.Print(`  -l, --list        - list the active projects line by line`)
-    help.Print(`  -s, --show        - show the current active project`)
+    help.Print(`  -s, --active      - show the current active project`)
     help.Print('')
     help.Print('ALIASED:')
-    help.Print(`  <red>selected</red>   -> <red>select -s</red>`)
-    help.Print(`  <red>active</red>     -> <red>select -s</red>`)
+    help.Print(`  <red>select</red>     -> <red>project select</red>`)
+    help.Print(`  <red>selected</red>   -> <red>project select -s</red>`)
+    help.Print(`  <red>active</red>     -> <red>project select -s</red>`)
+    help.Print(`  <red>a</red>          -> <red>project select -s</red>`)
     help.Print('')
 }
 function PrintHelpDeselect(){
     let help = log.Prefix('Help')
     help.Print('USAGE:')
-    help.Print('  <red>mob deselect</red> [OPTIONS]')
-    help.Print('  <red>mob deselect</red> <PROJECT> [OPTIONS]')
-    help.Print('  <red>mob deselect</red> <PROJECT1>,<PROJECT2>,.. [OPTIONS]')
+    help.Print('  <red>admiral project deselect</red> [OPTIONS]')
+    help.Print('  <red>admiral project deselect</red> <PROJECT> [OPTIONS]')
+    help.Print('  <red>admiral project deselect</red> <PROJECT1>,<PROJECT2>,.. [OPTIONS]')
     help.Print('')
     help.Print('DESCRIPTION:')
     help.Print('  Deselect specific projects or all projects.')
@@ -245,18 +248,3 @@ function PrintHelpDeselect(){
     help.Print(`  -h, --help        - print the help message`)
     help.Print('')
 }
-
-
-//TODO: special case
-///SPECIAL CASE:
-/*
-mauricius on  main [!?] via  v18.5.0 ➜ mo select all                      
-Projects selected: cws, meevu, eronet
-
-
-
-mauricius on  main [!?] via  v18.5.0 ➜ mo deselect all,^cws,^meevu,^eronet
-Deselected project: cws
-Deselected project: meevu
-Deselected project: eronet
-*/

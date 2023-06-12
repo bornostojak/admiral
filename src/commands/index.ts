@@ -1,7 +1,8 @@
 import logging from "../logging.js"
 import yargs from "yargs/yargs"
 
-import * as Select from './select'
+// import * as Select from './select'
+import * as Select from './project/select'
 import * as Deploy from './deploy'
 import * as Service from './service'
 import * as List from './list'
@@ -16,6 +17,11 @@ import ProjectConfig from "../config/project.js"
 const log = new logging("Command Parser")
 
 
+// separate the last output of the command with and empty line
+// for easier reading purposes
+process.on('exit', () => {
+    console.log()
+})
 
 export default async function ProcessArguments(args:string[]) {
     let parsedArgs = Object(yargs(args).help(false).argv)

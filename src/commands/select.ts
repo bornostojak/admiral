@@ -139,7 +139,7 @@ async function validateSelection(projects:string[]) {
         let undefinedProjects = projects?.filter(project => !definedProjects.includes(project)) 
         if (undefinedProjects?.length > 0) {
             log.Debug('<red>Validation FAILED.</red>')
-            log.Print(`Undefined projects: <b><red>${undefinedProjects.join(", ")}</red></b>`, true)
+            log.Print(`<yellow>Undefined projects:</yellow> <b>${undefinedProjects.join(", ")}</b>`, true)
             exit(1)
         }
     } catch (err) {
@@ -228,8 +228,9 @@ function PrintHelp() {
     help.Print(`  -s, --active      - show the current active project`)
     help.Print('')
     help.Print('ALIASED:')
-    help.Print(`  <red>selected</red>   -> <red>select -s</red>`)
-    help.Print(`  <red>active</red>     -> <red>select -s</red>`)
+    help.Print(`  <red>select</red>     -> <red>project select</red>`)
+    help.Print(`  <red>selected</red>   -> <red>project select -s</red>`)
+    help.Print(`  <red>active</red>     -> <red>project select -s</red>`)
     help.Print('')
 }
 function PrintHelpDeselect(){
