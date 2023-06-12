@@ -6,12 +6,15 @@ import * as Select from './select'
 import * as Deploy from './deploy'
 import * as Service from './service'
 import * as List from './list'
-import * as Server from './server/index'
-import * as Project from './project/index'
+import * as Server from './server'
+import * as Project from './project'
+import * as ConfigCmd from './config'
 
 import * as jsonHelpers from './helpers/json'
 import { SSHCredentials } from "../config/ssh.js"
 import Config from "../config/manager.js"
+
+import LocalConfig from "../config/localConfig.js"
  
 const log = new logging("Command Parser")
 
@@ -33,6 +36,9 @@ export default async function ProcessArguments(args:string[]) {
         case "selected":
             Select.ProcessCommand(['select', '-s', ...args.filter(f => f != 'select')])
             break
+        case "config":
+            await ConfigCmd.ProcessCommand(args)
+            break
         case "deploy":
             await Deploy.ProcessCommand(args)
             break
@@ -45,11 +51,11 @@ export default async function ProcessArguments(args:string[]) {
         case "list":
             await List.ProcessCommand(args)
             break
-        case "select":
-            await Select.ProcessCommand(args)
-            break
         case "project":
             await Project.ProcessCommand(args)
+            break
+        case "select":
+            await Select.ProcessCommand(args)
             break
         case "server":
             await Server.ProcessCommand(args)
@@ -58,8 +64,9 @@ export default async function ProcessArguments(args:string[]) {
             await Service.ProcessCommand(args)
             break
         case "test":
-            let conf = await Config.GetLocalConfig()
-            log.Print(new SSHCredentials(conf.ssh).SSH2Login())
+            let testing = LocalConfig.Load()
+            // let conf = await LocalConfig.Load()
+            // log.Print(new SSHCredentials(conf.SSH).SSH2Login())
             break
         default:
             commandNotFound(command)
