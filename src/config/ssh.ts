@@ -20,11 +20,24 @@ export class SSHCredentials implements ISSHCredentials {
     public PrivateKey: string | undefined;
     public PublicKey: string | undefined;
 
-    public constructor(username?: string, password?: string, publicKey?: string, privateKey?: string) {
-        this.Username = username
-        this.Password = password
-        this.PrivateKey = privateKey
-        this.PublicKey = publicKey
+    public constructor(config?: Object);
+    public constructor(username?: string, password?: string, privateKey?: string, publicKey?: string);
+    public constructor(arg1?: string, arg2?: string, arg3?: string, arg4?: string) {
+        if (typeof arg1 === "undefined") {
+            return
+        }
+        if (typeof arg1 === "string") {
+            this.Username = arg1 as string
+            this.Password = arg2 as string
+            this.PrivateKey = arg4 as string
+            this.PublicKey = arg3 as string
+        }
+        if (typeof arg1 === "object") {
+            this.Username = arg1["username"] ?? undefined
+            this.Password = arg1["password"] ?? undefined
+            this.PrivateKey = arg1["privateKey"] ?? undefined
+            this.PublicKey = arg1["publicKey"] ?? undefined
+        }
 
         if (this.PrivateKey && existsSync(ResolveUri(this.PrivateKey))) {
             this.PrivateKey = readFileSync(ResolveUri(this.PrivateKey)).toString()
@@ -35,12 +48,8 @@ export class SSHCredentials implements ISSHCredentials {
 
     }
 
-    public set username(value: string|undefined) {
-        this.Username = value
-    }
-    public set password(value: string|undefined) { 
-        this.Password = value
-    }
+    public set username(value: string|undefined) { this.Username = value }
+    public set password(value: string|undefined) { this.Password = value }
     public set privateKey(value: string|undefined) { 
         this.PrivateKey = value
         if (this.PrivateKey && existsSync(ResolveUri(this.PrivateKey))) {
@@ -58,21 +67,12 @@ export class SSHCredentials implements ISSHCredentials {
     public get privateKey() : string|undefined { return this.PrivateKey }
     public get publicKey() : string|undefined { return this.PublicKey }
 
-    public Objectify() {
+    public SSH2Login() {
         return {
             username: this.Username,
             password: this.Password,
             privatekey: this.PrivateKey,
             publickey: this.PublicKey
-        }
-    }
-
-    public static FromConfig(config: Object) : SSHCredentials | null {
-        try {
-            return Object.assign(new SSHCredentials(), config)
-        }
-        catch {
-            return null
         }
     }
 }

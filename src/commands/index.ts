@@ -58,16 +58,8 @@ export default async function ProcessArguments(args:string[]) {
             await Service.ProcessCommand(args)
             break
         case "test":
-            let test_object = {
-                string: "khalihfa",
-                int: 22,
-                float: 22.1,
-                bool: true,
-                nill: null,
-                array: ["sfdas", "fajsdlf"],
-                object: {sdfasdsaffdsolka:"polka"}
-            }
-            log.Print(jsonHelpers.IndentedStringify([test_object, test_object], {title: "Nikola", value: "Tesla"}))
+            let conf = await Config.GetLocalConfig()
+            log.Print(new SSHCredentials(conf.ssh).SSH2Login())
             break
         default:
             commandNotFound(command)

@@ -35,7 +35,7 @@ export default class Config {
         let tmp = new Config()
         
         if ("ssh" in parsed) {
-            tmp.ssh = SSHCredentials.FromConfig(parsed['ssh']) ?? undefined
+            tmp.ssh = new SSHCredentials(parsed['ssh']) ?? undefined
         }
         if ('logging' in parsed)
             tmp.logging = {...tmp.logging, ...parsed['logging']}
