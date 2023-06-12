@@ -34,7 +34,7 @@ export default class ProjectConfig {
     public static LoadByName(project: string): ProjectConfig | null {
         try {
             let dirPath = this.Directory()
-            let dirs = this.List()
+            let dirs = this.ListProjectNames()
             if (!dirs.includes(project)) {
                 return null
             }
@@ -96,10 +96,10 @@ export default class ProjectConfig {
         return projectsPath
     }
 
-    public static List(options: { withFileTypes: boolean } & { withFileTypes: true }): fs.Dirent[];
-    public static List(options: { withFileTypes: boolean } & { withFileTypes: false }): string[];
-    public static List(): string[];
-    public static List(options?: { withFileTypes: boolean }): (fs.Dirent | string)[] {
+    public static ListProjectNames(options: { withFileTypes: boolean } & { withFileTypes: true }): fs.Dirent[];
+    public static ListProjectNames(options: { withFileTypes: boolean } & { withFileTypes: false }): string[];
+    public static ListProjectNames(): string[];
+    public static ListProjectNames(options?: { withFileTypes: boolean }): (fs.Dirent | string)[] {
         let path = this.Directory()
         let projectDirContent = readdirSync(path, { withFileTypes: true })
         let dirs = projectDirContent.filter((d) => d.isDirectory())
@@ -110,7 +110,7 @@ export default class ProjectConfig {
     public static GetProjects(options: { status: ProjectStatus }): ProjectConfig[];
     public static GetProjects(): ProjectConfig[];
     public static GetProjects(options?: { status: ProjectStatus }): ProjectConfig[] {
-        let projects = ProjectConfig.List()
+        let projects = ProjectConfig.ListProjectNames()
             .map(p => ProjectConfig.LoadByName(p))
             .filter(p => p !== null)
             .map(p => p as ProjectConfig)

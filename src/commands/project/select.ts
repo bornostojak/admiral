@@ -72,7 +72,7 @@ export async function ProcessCommand(args: string[]) {
     if (parsedArgs.all) {
         log.Debug("Selecting all projects")
         //select = GetProjectsFileSync().map(p => p?.name).filter(p => !deselect.includes(p))
-        select = (ProjectConfig.List()).filter(p => !deselect.includes(p))
+        select = (ProjectConfig.ListProjectNames()).filter(p => !deselect.includes(p))
         log.Trace({prjectsAfterSelectAll: projects})
     }
 
@@ -96,7 +96,7 @@ async function processProjectsString(projectsString:string) : Promise<string[]> 
     if (!projectsString) return []
     log.Trace({projectsString})
     let projects : string[] = projectsString?.includes(SELECT_SYMBOL) ? Status.Load()?.Active ?? [] : []
-    let existingProjects = ProjectConfig.List()
+    let existingProjects = ProjectConfig.ListProjectNames()
     projects = [...projects, ...projectsString
         ?.split(',')
         .map(f => f === 'all' ? existingProjects : f )
@@ -129,7 +129,7 @@ async function validateSelection(projects:string[]) {
     log.Debug('Validating selection...')
     log.Trace({projects})
     try {
-        let definedProjects = ProjectConfig.List()
+        let definedProjects = ProjectConfig.ListProjectNames()
         if (!(definedProjects instanceof Array)) {
             log.Debug('<red>Validation FAILED.</red>')
             log.Error("Wrong syntax in <red>projects.json</red>!")

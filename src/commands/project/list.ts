@@ -30,7 +30,7 @@ export async function ProcessCommand(args: string[]){
         exit(0)
     }
 
-    let projects = ProjectConfig.List()
+    let projects = ProjectConfig.ListProjectNames()
     if (parsedArgs?.list) {
         projects.forEach(p => {
             log.Print(`${p}`)
