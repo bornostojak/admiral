@@ -20,9 +20,10 @@ export class SSHCredentials implements ISSHCredentials {
     public PrivateKey: string | undefined;
     public PublicKey: string | undefined;
 
-    public constructor(config?: Object);
+    public constructor(ssh: SSHCredentials);
+    public constructor({...config}: {[key:string]: string});
     public constructor(username?: string, password?: string, privateKey?: string, publicKey?: string);
-    public constructor(arg1?: string, arg2?: string, arg3?: string, arg4?: string) {
+    public constructor(arg1?: unknown, arg2?: string, arg3?: string, arg4?: string) {
         if (typeof arg1 === "undefined") {
             return
         }
@@ -32,11 +33,15 @@ export class SSHCredentials implements ISSHCredentials {
             this.PrivateKey = arg4 as string
             this.PublicKey = arg3 as string
         }
-        if (typeof arg1 === "object") {
-            this.Username = arg1["username"] ?? undefined
-            this.Password = arg1["password"] ?? undefined
-            this.PrivateKey = arg1["privateKey"] ?? undefined
-            this.PublicKey = arg1["publicKey"] ?? undefined
+        else if (arg1 instanceof SSHCredentials) {
+            let {Username, Password, PrivateKey, PublicKey, ..._} = arg1
+            Object.assign(this, {Username, Password, PrivateKey, PublicKey})
+        }
+        else if (typeof arg1 === "object") {
+            this.Username = (arg1 as any)["username"] ?? undefined
+            this.Password = (arg1 as any)["password"] ?? undefined
+            this.PrivateKey = (arg1 as any)["privateKey"] ?? undefined
+            this.PublicKey = (arg1 as any)["publicKey"] ?? undefined
         }
 
         if (this.PrivateKey && existsSync(ResolveUri(this.PrivateKey))) {
