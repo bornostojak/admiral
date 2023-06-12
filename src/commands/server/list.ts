@@ -63,6 +63,10 @@ export async function ProcessCommand(args: string[]){
         })), true)
         exit(0)
     }
+    if (parsedArgs.table) {
+        log.Print(helpers.Json.TableString(servers))
+        exit(0)
+    }
     for (let project of servers) {
         let projectName = Object.keys(project)[0].toString()
         //log.Print(`<b>====== Project: <cyan>${projectName}</cyan> ======</b>`)
@@ -99,7 +103,7 @@ function PrintHelp() {
     help.Print('    -s, --show')
     help.Print('    -u, --unveil               reveal the username and password')
     help.Print('    -j, --json                 return in JSON format')
-    help.Print('    -t, --tables               print servers in table format')
+    help.Print('    -t, --table                print servers in table format')
     help.Print('    -h, --help                 print help')
     help.Print('')
 }

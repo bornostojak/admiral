@@ -4,8 +4,48 @@ import Colorizer from 'json-colorizer'
 export function Colorized(obj: object) {
     return Colorizer(JSON.stringify(obj, null, 2))
 }
-export function IndentedStringify(obj: object, heading?: {title?: string, value?: string}, level: number = 0) {
-    let objectArray: Array<object>  = ( obj instanceof Array) ?  obj : [obj]
+export function TableString(obj: Object) : String;
+export function TableString(obj: Object, firstLevelHeading: boolean ) : String ;
+export function TableString(obj: Object, firstLevelHeading: boolean = false ) : String {
+    let objArray : Object[]  = (obj instanceof Array) ? obj : [obj]
+    let finalString = ""
+    for (let item of objArray) {
+        let totalValueLengths : {[key: string]: number} = {}
+        for (let [title, content] of Object.entries(item)) {
+            // title = cws
+            // content = info
+            for (let element of content) {
+                for (let [key, val] of Object.entries(element)) {
+                    let parsedValue = val instanceof Array ? val.map(v => v instanceof String ? v : JSON.stringify(v)).join(', ') : (typeof val === "string" ? val : JSON.stringify(val))
+                    let maxOfNameAndValue = parsedValue.length > key.length ? parsedValue.length : key.length
+                    if ((totalValueLengths[(key as string)] ?? 0) < maxOfNameAndValue)
+                        totalValueLengths[(key as string)] =  maxOfNameAndValue
+                }
+            }
+        }
+        finalString+=''
+        for (let [title, content] of Object.entries(item)) {
+            finalString += Object.values(totalValueLengths).map(x => '-'+(new Array(3+x)).join('-')).join('')+"+\n"
+            finalString += "| " + `<b><cyan>${title}</cyan></b>` + (new Array(Object.keys(totalValueLengths).length*3 -title.length -1 + Object.values(totalValueLengths).reduce((a,b) => a+b))).join(' ') + '|\n'
+            // finalString += `  ${title}\n`
+            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
+            finalString += Object.entries(totalValueLengths).map(x => '| '+x[0][0].toUpperCase()+x[0].slice(1)+(new Array(2+x[1]-x[0].length)).join(' ')).join('') + '|\n'
+            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n"
+            // title = cws
+            // content = info
+            for (var entry of content) {
+                for (let header of Object.keys(totalValueLengths)) {
+                    let parsedValue = entry[header] instanceof Array ? (entry[header] as Array<any>).map(v => typeof v === "string" ? v : JSON.stringify(v)).join(', ') : (typeof entry[header] === "string" ? entry[header] : JSON.stringify(entry[header]))
+                    finalString += '| ' + parsedValue+(new Array(2 + totalValueLengths[header] - parsedValue.length)).join(' ')
+                }
+                finalString += "|\n"
+            }
+            finalString += Object.values(totalValueLengths).map(x => '+'+(new Array(3+x)).join('-')).join('')+"+\n\n"
+        }
+    }
+    return ColorFormatting(finalString)
+}
+export function IndentedStringify(obj: object, heading?: {title: string, value?: string}, level: number = 0) {
     let finalString = ""
     if (heading && "title" in heading) {
         let Header = `<b>${heading.title}</b>`
