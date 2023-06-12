@@ -171,9 +171,6 @@ function GrabServers(project) {
 }
 exports.GrabServers = GrabServers;
 class IPv4 {
-    get Value() {
-        return this._value;
-    }
     constructor(arg) {
         this._address = '0.0.0.0';
         this._value = 0;
@@ -181,6 +178,9 @@ class IPv4 {
         if (isNaN(parsedValue))
             return;
         this._value = parsedValue;
+    }
+    get Value() {
+        return this._value;
     }
     MaskedBy(mask) {
         if (typeof mask === "string") {

@@ -11,6 +11,12 @@ const util_1 = require("util");
 const logging_1 = __importDefault(require("./config/logging"));
 var loggingConfig = logging_1.default.Load();
 class log {
+    constructor(prefix) {
+        this._prefixes = [];
+        if (!prefix)
+            return;
+        this._prefixes.push(prefix);
+    }
     static rotBgColor(messages, joiner = '') {
         let parsed = [];
         messages = this._logLevel > 1 ? messages : messages.slice(0, 1);
@@ -46,12 +52,6 @@ class log {
         if (!(method in options))
             return (m) => m;
         return (m) => options[method](m);
-    }
-    constructor(prefix) {
-        this._prefixes = [];
-        if (!prefix)
-            return;
-        this._prefixes.push(prefix);
     }
     Prefix(prefix, chalk_method = chalk_1.default.bgMagenta) {
         let tmp = new log();
