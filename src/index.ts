@@ -1,4 +1,4 @@
-import bindSocket from './connections/bindSocket.js' 
+import bindSocketAsync from './connections/bindSocket.js' 
 import {unlinkSync} from "fs"
 import {exit} from 'process'
 import log from './logging.js'
@@ -11,13 +11,5 @@ let sshConnectionParameters = {
     username: 'root',
     password: 'bint123'
 }
-bindSocket(remoteSocketPath, localSocketPath, sshConnectionParameters)
-
-
-
-try {
-    process.on('SIGINT', (code) => {exit(1)})
-    process.on('exit', (code) => {unlinkSync(localSocketPath); log('done')})
-} catch {
-    log("Shit")
-}
+process.on("SIGINT", () => exit(1))
+bindSocketAsync(remoteSocketPath, localSocketPath, sshConnectionParameters)

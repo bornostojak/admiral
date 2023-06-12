@@ -1,36 +1,38 @@
 import { Client } from 'ssh2';
 import net from "net";
-import log from '../logging.js'
+import logging from '../logging.js'
+import { existsSync, unlinkSync } from 'fs';
 
-//let DOCKER_SOCKET = '/var/run/docker.sock'
-//let LOCAL_SOCKET = '/tmp/docker.temp.sock'
-//let server:any = null
-//var localStream:net.Socket|null = null
-
-
-export default function bindSocket(remoteSocketPath: string, localSocketPath: string, sshParameters:object) {
-
-    let localStream: net.Socket|undefined = undefined
-    let server = net.createServer((stream) => {
-        log(`Binding remote socket ${remoteSocketPath} to local socket ${localSocketPath} over ssh.`)
-        localStream = stream
-    })
-    .listen(localSocketPath)
-    .on('connection', () => {
-        var conn2 = new Client()
-        conn2.on('ready', () => {
-            conn2.openssh_forwardOutStreamLocal(remoteSocketPath, (err, stream) => {
-                if (err) {
-                    log(err)
-                    return
-                }
-                log(`A connection to the local socket ${localSocketPath} has been established.`)
-                if (localStream != null)
-                    stream.pipe(localStream).pipe(stream)
-            })
+let log = new logging("SOCKET BINDING")
+/**
+ * bind a remote server's docker to a remote socket via SSH
+ * */
+export default function bindSocketAsync(remoteSocketPath: string, localSocketPath: string, sshParameters:object) {    
+    log.log("REMOTE SOCKET PARAMETERS"+JSON.stringify({...sshParameters, ...{readyTimeout: 15000}}))
+    return new Promise<net.Server>((resolve, reject) => {
+        let server = net.createServer(() => {
+            log.log(`Binding remote socket ${remoteSocketPath} to local socket ${localSocketPath} over ssh.`)
         })
-        .connect(sshParameters)
+        .listen(localSocketPath)
+        .on('connection', (localSocketStream) => {
+            var conn2 = new Client()
+            conn2.on('ready', () => {
+                conn2.openssh_forwardOutStreamLocal(remoteSocketPath, (err, remoteSocketStream) => {
+                    if (err) {
+                        log.log(err)
+                        reject(err)
+                        return
+                    }
+                    log.log(`A connection to the local socket ${localSocketPath} has been established.`)
+                    if (localSocketStream != null)
+                        remoteSocketStream.pipe(localSocketStream).pipe(remoteSocketStream)
+                })
+            })
+            .connect({...{readyTimeout: 15000, ...sshParameters}})
+        })
+        process.on("SIGINT", () => { if (existsSync(localSocketPath)) unlinkSync(localSocketPath) })
+        process.on("exit", () => { if (existsSync(localSocketPath)) unlinkSync(localSocketPath) })
+        resolve(server);
     })
-    server;
 }
 
