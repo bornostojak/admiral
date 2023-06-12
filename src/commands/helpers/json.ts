@@ -1,4 +1,4 @@
-import logging, {Formatting as ColorFormatting} from '../../logging'
+import logging, { Formatting as ColorFormatting } from '../../logging'
 import Colorizer from 'json-colorizer'
 
 export function ColorizedJSON(obj: object) {
@@ -9,15 +9,25 @@ function stringifyObjectValues(object: { [key: string]: any }): { [key: string]:
     return Object.fromEntries(Object.entries(object).map(([key, value]) => [key, ((value instanceof Array) ? value.map(v => typeof v === 'string' ? v : JSON.stringify(v, null, 0)).join(', ') : (typeof value === 'string' ? value : JSON.stringify(value, null, 0)))]))
 }
 
-export function toTableString(obj: Object[]): string;
-export function toTableString({ ...obj }: { [key: string]: Object }): string;
+/**
+ * 
+ * @param obj object array that will be stringified and populated in a table-looking string
+ * @return the parsed data string in a table-like format
+ */
+export function toTableString(obj: { [key: string]: any }[]): string;
+/**
+ * 
+ * @param obj object keys are usd as title, an the value objects will be used to populate the table
+ * @return the parsed data string in a table-like format
+ */
+export function toTableString(obj: { [key: string]: { [key: string]: any }[] }): string;
 export function toTableString(obj: unknown, title?: false): string {
     if (!(obj instanceof Array)) {
         let final = ''
         for (let [key, content] of Object.entries(obj as { [key: string]: any[] })) {
             let tableString = toTableString(content)
             let rowLength = tableString.split('\n')[0].length
-            final += `+${"-".repeat(rowLength-2)}+\n`
+            final += `+${"-".repeat(rowLength - 2)}+\n`
             final += `| <cyan><b>${key}</b></cyan>${" ".repeat(rowLength - key.length - 3)}|\n`
             // final += `+${(new Array(rowLength-2)).join("-")}+\n`
             final += tableString
@@ -59,7 +69,7 @@ export function toTableString(obj: unknown, title?: false): string {
                 continue
             }
             let cellValue = rowObject[header]
-            tableString += `| ${cellValue}${' '.repeat(cellWidth - cellValue.length )} `
+            tableString += `| ${cellValue}${' '.repeat(cellWidth - cellValue.length)} `
         }
         // finish the row string an continue to the next row
         tableString += "|\n"
@@ -68,7 +78,13 @@ export function toTableString(obj: unknown, title?: false): string {
     return tableString
 
 }
-export function IndentedStringify(obj: object, heading?: {title: string, value?: string}, level: number = 0) {
+/**
+ * 
+ * @param obj the object that will be converted to an indented string
+ * @param heading the object containing the title and title value information
+ * @returns the string converted into an tab indented format
+ */
+export function IndentedStringify(obj: object, heading?: { title: string, value?: string }) {
     let finalString = ""
     if (heading && "title" in heading) {
         let Header = `<b>${heading.title}</b>`
@@ -77,19 +93,19 @@ export function IndentedStringify(obj: object, heading?: {title: string, value?:
         }
         finalString += ColorFormatting(Header) + '\n'
     }
-    let objArray : Object[]  = (obj instanceof Array) ? obj : [obj]
+    let objArray: Object[] = (obj instanceof Array) ? obj : [obj]
     for (let entry of objArray) {
         finalString += leftPadding(convertObjectToString(entry))
     }
     return finalString
 }
 
-function leftPadding(string:string) : string {
-    return '  '+string.replace(/\n/g, '\n  ').replace(/\n  $/, '\n')
+function leftPadding(string: string): string {
+    return '  ' + string.replace(/\n/g, '\n  ').replace(/\n  $/, '\n')
 }
 
-function convertObjectToString(obj: Object) : string {
-    let parsedString : string = ""
+function convertObjectToString(obj: Object): string {
+    let parsedString: string = ""
     let longestKeyLength = 5 + Math.max(...(Object.keys(obj).map(x => x.length)))
     for (let [key, entry] of Object.entries(obj)) {
         let dots = Array(longestKeyLength - key.length).join('.') + ': '
