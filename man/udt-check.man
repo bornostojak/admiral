@@ -1,0 +1,784 @@
+.TH Motherbee 1 "2023-01-14" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
+.SH "NAME"
+udt-check
+\- organizes the docker swarm code and infrastructure in such a way that maintenance, upgrades, reconfiguration is easy when one codebase is shared between multiple projects
+.SH "SYNOPSIS"
+.B udt 
+[OPTIONS]
+COMMAND
+[ARGS]
+.P
+.B udt check
+[CHECK]
+PROJECT=<project_directory_absolute_path>
+[-v]
+
+.SH "DESCRIPTION"
+This program is used to perform checks for a give project on the UniqCast IPTV OTT Turn-key solution platform, the best IPTV OTT Turn-key solution platform in the world.
+
+
+.SH "OPTIONS"
+.PP
+.B \-v
+.RS 8
+make outpu more verbose.
+.RE
+
+
+.SH CHECKS
+.B all_nodes_in_swarm
+\- check if status of all nodes is OK
+.RS 8
+.PP 
+This check will validate that all nodes/servers in the docker swarm are up, and that their status is either their:
+.P
+.RS 2
+\- STATUS is \fIReady\fR and their AVAILABILITY is \fIActive\fR 
+.RS 2
+.RE
+\- STATUS is \fIDrain\fR.
+.RE 0 
+.RS 8
+.P
+This will also verify that the state and number of all nodes in the docker swarm on the servers matches the one described in the \fIservers\fR file 
+from th project's directory.
+
+.B FAIL CONDITIONS
+.RS 2
+\- not all nodes specified in the \fIservers\fR file are part of the swarm
+.RS 2
+.RE
+\- the swarm has nodes that were not specified in the \fIservers\fR has 
+.RS 2
+.RE
+\- the swarm is not consisten between all nodes
+.RE
+
+PREREQUISITES:
+.RS 2
+.I PROJECT_DIR/config/server
+\- file containig the information of the serv.RS 2
+.RE
+
+
+.RE
+.B check_client_user_channels_have_link
+.RS 8
+.P
+Checks whether all channels connected to user (\fICLIENT_CHECK_USERNAME\fR) have a link through which tey can be reached.
+
+.B
+FAIL CONDITIONS
+.RS 2
+\- any of the user assigned channels accessible from the packages have a missing OTT link.
+.RS 2
+*Not sure if this applies to HLS channels, and if it ignores DVB-only and MULTICAST-only channels
+.RE
+.RE
+
+PREREQUISITES:
+.RS 2
+\- the user has to have packages containing \fBall\fR (relevant) channels assigned, with the channels assigned to at least one channel category
+
+\- \fIenv.shared\fR must contain:
+.RS 4
+.I CLIENT_CHECK_URL 
+\- the full client api url
+.RS 4
+.RE
+.I CLIENT_CHECK_USERNAME
+\- client username
+.RS 4
+.RE
+.I CLIENT_CHECK_PASSWORD
+\- client password
+.RS 4
+.RE
+.I CLIENT_CHECK_DEVICE_TYPE
+\- client device type (mobile)
+.RS 4
+.RE
+.I CLIENT_CHECK_DEVICE_UID
+\- client device uid (test)
+.RE
+.RE
+
+
+
+
+.RE
+.B check_client_user_has_channels
+.RS 8
+.P
+This check verifies that at least one channel accessible from the packages assigned to the check user (\fICLIENT_CHECK_USERNAME\fR). 
+This check will perform a login to the client API and perform a call to fetch the users packages and thenafter the channels of those packages,
+then it will take one of those packages' channel and return the HLS link, wihich can be used to play the channel back in programs like \fBvlc\fR, \fBffplay\fR, etc.
+
+.B FAIL CONDITIONS
+.RS 2
+\- user has no packages assigned
+.RS
+.RE
+\- user has no channels assigned to the packages assigned to him
+.RE
+
+PREREQUISITES:
+.RS 2
+\- the user has to have assigned packages containing channels, with the channels assigned to at least one channel category
+
+\- \fIenv.shared\fR must contain:
+.RS 4
+.I CLIENT_CHECK_URL 
+\- the full client api url
+.RS 4
+.RE
+.I CLIENT_CHECK_USERNAME
+\- client username
+.RS 4
+.RE
+.I CLIENT_CHECK_PASSWORD
+\- client password
+.RS 4
+.RE
+.I CLIENT_CHECK_DEVICE_TYPE
+\- client device type (mobile)
+.RS 4
+.RE
+.I CLIENT_CHECK_DEVICE_UID
+\- client device uid (test)
+.RE
+.RE
+
+
+.RE
+.B check_engine_file
+.RS 8
+.P
+With this option(check), you can execute other checks written in one JSON file.
+Examples of JSON: Please contact DevOps Team.
+There are two options for check execution: parallel and serial.
+If you are using only serial and don't need subchecks, add parameter NOSUBCHECKS=true when running the tool and write JSON file as Devops shows you(not the same when NOSUBCHEKS=false).
+This check can to send status of executed checks to Prometheus(use optional params: PROMETHEUS_PORT, INTERVAL).
+
+PREREQUISITES:
+.RS 2
+\- \fIenv.shared\fR must contain:
+.RS 4
+.I CHECK_FILE
+.RE
+.RE
+
+OPTIONAL PARAMETERS:
+.RS 2
+\- \fIenv.shared\fR can optionaly contain:
+.RS 4
+.I NOSUBCHECKS
+.RS 2
+.RE
+.I PROMETHEUS_PORT
+.RS 2
+.RE
+.I INTERVAL
+.RE
+.RE
+
+EXAMPLE:
+.RS 2
+udt check check_engine_file CHECK_FILE=group_checks/check_test.js [-v]
+.RS 2
+.RE
+udt check check_engine_file CHECK_FILE=group_checks/check_test.json PROMETHEUS_PORT=3001 INTERVAL=60000 [-v]
+.RS 2
+.RE
+udt check check_engine_file CHECK_FILE=group_checks/check_test.json NOSUBCHECKS=true PROMETHEUS_PORT=3001 INTERVAL=60000 [-v]
+.RE
+
+
+.RE
+.B check_tvmid_core_client_api
+.RS 8
+.P
+Preforms a API call to verify that the \fItvmid-coe\fR version is successfully returned.
+
+PREREQUISITES:
+.RS 2
+\- \fIenv.shared\fR must contain:
+.RS 4
+.I PROVISIONING_CHECK_URL
+.RE
+.RE
+
+EXAMPLE:
+.RS 2
+udt check check_tvmid_core_client_api [-v]
+.RS 2
+.RE
+
+.RE
+
+
+\#.RE
+\#.B disk_usage
+\#.RS 8
+\#.P
+\#TEXT
+
+
+
+.RE
+.B docker_pull
+.RS 8
+.P
+Performes a \fIdocker pull\fR request from ALL NODES to a pre-sepcified docker image.
+
+.B FAIL CONDITIONS
+.RS 2
+\- at least one node is incapable of perfoming said \fIdocker pull\fR request
+.RS 2
+.RE
+
+.RE
+
+\#.PREREQUISITES:
+\#..RS 2
+\#.\- \fIenv.shared\fR must contain:
+\#..RS 4
+\#..I PROVISIONING_CHECK_URL
+\#..RE
+\#..RE
+
+EXAMPLE:
+.RS 2
+udt check docker_pull IMAGE=auth-proxy:v1.0.0 [-v]
+.RS 2
+.RE
+.RE
+
+
+\#.RE
+\#.B edge_redis
+\#.RS 8
+\#.P
+\#TEXT
+\#
+\#
+.RE
+.B hlslive
+.RS 8
+.P
+Checks whether a specified HLS channel stream is up.
+
+.B FAIL CONDITIONS
+.RS 2
+\- \fBAMEND HERE\fR
+.RE
+
+
+
+
+EXAMPLE:
+.RS 2
+udt check hlslive URL=http://something.com/playlist.m3u8 [-v]
+.RS 2
+.RE
+udt check hlslive URL=cminput:hrt1c [-v]
+.RS 2
+.RE
+udt check hlslive URL=http://something.com/playlist.m3u8 LOOP=true [-v]
+.RS 2
+.RE
+udt check hlslive URL=http://something.com/playlist.m3u8,http://something2.com/playlist2.m3u8 LOOP=true [-v]
+.RS 2
+.RE
+.RE
+
+
+.RE
+.B http
+.RS 8
+.P
+This check has implemented login functions for uniqcast services.(API_ENDPOINT)
+.RS 2
+.RE
+There is 3 API_ENDPOINTS: uniqapi_client, uniqapi_provisioning, uniqapi_admin.
+.RS 2
+.RE
+If you are going to use one of this ENDPOINTS, you need to define next ENV vars in env.shared:
+
+.RS 2
+.RE
+1)\fIuniqapi_provisioning\fR -> PROVISIONING_CHECK_USER AND PROVISIONING_CHECK_PASSWORD
+.RS 2
+.RE
+2)\fIuniqapi_admin\fR -> PROVISIONING_CHECK_USER, PROVISIONING_CHECK_PASSWORD, PROVISIONING_CHECK_URL
+.RS 2
+.RE
+3)\fIuniqapi_client\fR -> CLIENT_CHECK_URL, CLIENT_CHECK_USERNAME, CLIENT_CHECK_PASSWORD, CLIENT_CHECK_DEVICE_TYPE, CLIENT_CHECK_DEVICE_UID, CLIENT_CHECK_OPERATOR
+
+
+PREREQUISITES:
+.RS 2
+\- \fIenv.shared\fR must contain:
+.RS 4
+\fIHOST\fR
+.RS 2
+.RE
+\fIURL\fR
+.RS 2
+.RE
+\fIRESPONSE_TYPE\fR
+.RS 2
+.RE
+\fIRESPONSE_RESULT\fR
+.RE
+.RE
+
+OPTIONAL PARAMETERS:
+.RS 2
+\- \fIenv.shared\fR can optionaly contain:
+.RS 4
+.I TIMEOUT
+.RS 2
+.RE
+.I JSONPATH_QUERY
+.RS 2
+.RE
+.I API_ENDPOINT
+(uniqapi_client|uniqapi_provisioning|uniqapi_admin)
+.RS 2
+.RE
+.I PREFIX(default https)
+.RS 2
+.RE
+.I METHOD
+(GET|POST|OPTION)
+.RS 2
+.RE
+.I PORT
+(default 443)
+.RS 2
+.RE
+.I USERNAME&&PASSWORD
+(For basic http authorization)
+.RE
+.RE
+
+EXAMPLE:
+.RS 2
+.RS 2
+.RE
+udt check http URL=/dsada HOST=www.uniqcast.com RESPONSE_TYPE=status RESPONSE_RESULT=404,
+.RS 2
+.RE
+udt check http URL=/dsada HOST=www.uniqcast.com RESPONSE_TYPE=regexp RESPONSE_RESULT=.*webflow.*,
+.RS 2
+.RE
+udt check http URL=/api/v1/version?accessKey={{CONF_ACCESS_KEY}} HOST=office-new-dev.uniqcast.com PORT=11611 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=ok JSONPATH_QUERY=$.status,
+.RS 2
+.RE
+udt check http METHOD=POST URL=/api/admin/clear_cache HOST=office-new-dev.uniqcast.com PORT=12401 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=ok JSONPATH_QUERY=$.status API_ENDPOINT=uniqapi_admin -v PROJECT=projects/testprojekt,
+.RS 2
+.RE
+udt check http URL=/api/v1/channels HOST=office-new-dev.uniqcast.com PORT=12401 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=ok JSONPATH_QUERY=$.status API_ENDPOINT=uniqapi_admin -v PROJECT=./projects/testprojekt,
+.RS 2
+.RE
+udt check http "URL=/api/client/v1/{{CONF_CLIENT_CHECK_OPERATOR}}/channels" HOST=office-new-dev.uniqcast.com RESPONSE_TYPE=jsonpath "RESPONSE_RESULT=ok" JSONPATH_QUERY=$.status PORT=11611 API_ENDPOINT=uniqapi_client
+.RE
+
+
+.RE
+.B is_ntp_synced
+.RS 8
+.P
+This check is used for testing if all servers from project are synced with NTP server.
+
+EXAMPLE:
+.RS 2
+udt check is_ntp_synced [-v]
+.RE
+
+.RE
+.B is_ssl_valid_until
+.RS 8
+.P
+Checks whether the SSL certificate raimins valid for the amount of time specified in \fIVALID_NEXT_DAYS\fR
+
+PREREQUISITES:
+.RS 2
+.I HOST
+\- the host domain name (should match the one specified in the SSL cert)
+.RS 2
+.RE
+.I PORT
+\- an accessible https port
+.RS 2
+.RE
+.I VALID_NEXT_DAYS
+\- the amount of time we are testing validation for
+.RS 2
+.RE
+.RE
+
+OPTIONAL PARAMETERS:
+.RS 2
+.I TIMEOUT
+\- the timeout period
+.RE
+
+EXAMPLE:
+.RS 2
+udt check ssl_full_chain HOST='www.google.com' PORT=11404 VALID_NEXT_DAYS=7 [-v]
+.RS 2
+.RE
+udt check ssl_full_chain HOST='www.google.com' PORT=11404 VALID_NEXT_DAYS=7 TIMEOUT=5000 [-v]
+.RE
+
+.RE
+.B latest_images
+.RS 8
+.P
+Returns a list of the latest docker images from the \fIdocker.uniqcast.com:5000\fR
+
+EXAMPLE:
+.RS 2
+udt check latest_images [-v]
+.RE
+.RE
+
+
+.RE
+.B license
+.RS 8
+.P
+Performs a license check and compares results from both the primary and the secondary license servers.
+
+EXAMPLE:
+.RS 2
+udt check license [-v]
+.RE
+.RE
+
+
+.RE
+.B nats
+.RS 8
+.P
+Checks whether the NATS service is working properly, be it single or cluster mode.
+
+PREREQUISITES:
+.RS 2
+.I NATS_SERVER1, NATS_SERVER2
+(IPv4)
+\- the IP address of the nats servers
+.RS 2
+.RE
+.I NATS_PORT
+(IPv4)
+\- the NATS port
+.RE
+
+EXAMPLE:
+.RS 2
+node dist/udt.js check nats NATS_SERVER1=ipaddress NATS_SERVER2=ipaddress NATS_PORT=number
+.RE
+.RE
+
+
+
+
+.RE
+.B redis
+.RS 8
+.P
+This check is used for testing if the Redis(single or cluster) works properly.
+.RS 2
+.RE
+If no parameters are defined, this check will default to values from the env.shared file from the project's configurations.
+
+OPTIONAL PARAMETERS:
+.RS
+.RE
+(*) at leas one is necessary
+.RS 2
+.RS
+.RE
+*
+.I REDIS_SERVER
+and
+.I REDIS_PORT
+\- the server & port used to connect to redis
+.RS
+.RE
+.RS 2
+.I REDIS_KEY
+\- the key to which the test value will be assigned to
+.RE
+.RS 2
+.I REDIS_VALUE
+\- the test value
+.RE
+\- \fIenv.shared\fR can optionaly contain:
+.RS 4
+*
+.I REDIS_SENTINELS
+\- the redis sentinel configuration [ i.e. redi-1.ucat:11154,redis-2.ucast:11155...]
+.RS 2
+.RE
+*
+.I REDIS_SINGLE_NODE
+\- the redis single node configuration [ i.e. redis-1.ucast:6379]
+.RE
+.RE
+
+.RE
+.B service_up
+.RS 8
+.P
+Checks whether either all service or the specified services are up.
+.RS
+.RE
+Regular expressions can be used with the \fISERVICE\fR and \fIIGNORE\fR parameters.
+.RS
+.RE
+\fIIGNORE\fR can be set to the "\fILOW\fR" keyword (all caps), which will ignore low priority stacks 
+.RS
+.RE
+like metrics, statia, auth nad possible some exporters, which are necessary services, but in critical situations not mandatory.
+
+
+OPTIONAL PARAMETERS:
+.RS 2
+.I SERVICE
+(RegEx) \- define which services are to be checked, can be set to "\fIall\fR", if ommited "\fIall\fR" is assumed
+.RS
+.RE
+.I IGNORE
+(RegEx) \- define which services are to be ignored, can be set to "\fILOW\fR" which ignores low priority services
+.RE
+
+EXAMPLE:
+.RS 2
+udt check service_up
+.RS
+.RE
+udt check service_up SERVICE=all
+.RS
+.RE
+udt check service_up SERVICE=db-ha_etcd1,nats_exporter,playlist_server
+.RS
+.RE
+udt check service_up SERVICE='.*tvmid-core.*' IGNORE='.*api.*'
+.RE
+
+
+.RE
+.B sql_query
+.RS 8
+.P
+This check is used for sending query to the project database and compare received data with defined value(\fICOMPARISON_VALUE\fR).
+.RS
+.RE
+You can compare result with types : regexp and number
+.RS
+.RE
+If you are using type number, then you should define optional param \fICOMPARISON\fR=(equal|less_than|greater_than) which will compare result to defined value.
+.RS
+.RE
+(result greater_then \fICOMPARISON_VALUE\fR -> if yes return true else return false
+
+.RS
+.RE
+IF NO PARAMETERS WERE SPECIFIED, the call will default to the following query:
+.RS
+.RE
+\fIDB\fR=(db name containig 'tvmid' from env.shared's DATABASES_TO_CREATE value) \fIQUERY\fR="SELECT * FROM auth_users WHERE id = 1" \fICOMPARISON_TYPE\fR=regexp \fICOMPARISON_VALUE\fR=Superuser
+        
+
+
+OPTIONAL PARAMETERS:
+.RS 2
+\- \fIenv.shared\fR can optionaly contain:
+.RS 4
+.I DATABASES_TO_CREATE
+.RE
+.RS 2
+.I DB
+.RS
+.RE
+.I QUERY
+.RS
+.RE
+.I COMPARISON_TYPE
+.RS
+.RE
+.I COMPARISON_VALUE
+.RS
+.RE
+.I COMPARISON
+.RE
+.RE
+
+EXAMPLE:
+.RS 2
+udt check sql_query DB=tvmid_core QUERY="select 'ja sam taj' from channels" COMPARISON_TYPE=regexp COMPARISON_VALUE="first.*second"
+.RS
+.RE
+udt check sql_query DB=tvmid_core QUERY="SELECT uid FROM auth_users WHERE id = 1" COMPARISON_TYPE=regexp COMPARISON_VALUE=Superuser
+.RS
+.RE
+udt check sql_query DB=tvmid_core QUERY="select count(*) from channels" COMPARISON_TYPE=number COMPARISON=greater_than COMPARISON_VALUE=100
+.RE
+
+
+
+.RE
+.B ssh
+.RS 8
+.P
+This check is used for executing an ssh command on a specified server and compareing the received data with the value defined in \fIRESPONSE_RESULT\fR.
+.RS
+.RE
+You can define a \fIHOST\fR using a server's name from the servers file or a specific server's IP.
+.RS
+.RE
+You can compare the result based on the value type using (\fIRESPONSE_TYPE\fR): "regexp", "jsonpath" and "number"
+.RS
+.RE
+If you are using the "number" type, then the \fIRESPONSE_RESULT\fR can be (lt<NUMBER>, <NUMBER> or gt<NUMBER>  -> examples are provided) and the result will be compared to \fIRESPONSE_RESULT\fR.
+.RS
+.RE
+In case of "jsonpath", you should define the JSONPATH_QUERY value using the \fIjq\fR syntax, where the specified value from the JSON return will be compared to the one defined in \fIRESPONSE_RESULT\fR (if the expected value from "jsonpath" is a number, you can use ls<NUMBER> | gr<NUMBER> | <NUMBER>).
+.RS
+.RE
+If you are using \fIRESPONSE_TYPE\fR=regexp then it will compare result using regular expression.
+.RS
+.RE
+
+PREREQUISITES:
+.RS 2
+.I HOST
+.RS
+.RE
+.I SSH_USERNAME
+.RS
+.RE
+.I SSH_PASSWORD
+.RS
+.RE
+.I RESPONSE_TYPE
+.RS
+.RE
+.I RESPONSE_RESULT
+.RS
+.RE
+.I SSH_COMMAND
+.RE
+
+OPTIONAL PARAMETERS:
+.RS 2
+.I TIMEOUT
+.RS
+.RE
+.I JSONPATH_QUERY
+.RE
+
+EXAMPLE:
+.RS 2
+udt check ssh HOST=node-1-server SSH_USERNAME=node1user SSH_PASSWORD=pass123 PORT=22 RESPONSE_TYPE=regexp RESPONSE_RESULT=.*Filesystem.* SSH_COMMAND=df -h,
+.RS
+.RE
+udt check ssh HOST=192.168.1.123 SSH_SUERNAME=node1user SSH_PASSWORD=pass123 PORT=22 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=192.168.56.10 SSH_COMMAND="curl -s 'localhost:11185/cluster'" JSONPATH_QUERY=$.members[0].host,
+.RS
+.RE
+udt check ssh HOST=192.168.1.123 SSH_SUERNAME=node1user SSH_PASSWORD=pass123 PORT=22 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=192.168.56.10 SSH_COMMAND="curl -s 'localhost:11185/cluster'" JSONPATH_QUERY=$.members[0].host,
+.RS
+.RE
+udt check ssh HOST=192.168.1.123 SSH_SUERNAME=node1user SSH_PASSWORD=pass123 PORT=22 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=lt1 SSH_COMMAND="curl -s 'localhost:11185/cluster'" JSONPATH_QUERY=$.members[0].lag
+.RS
+.RE
+udt check ssh HOST=192.168.1.123 SSH_SUERNAME=node1user SSH_PASSWORD=pass123 RESPONSE_TYPE=number RESPONSE_RESULT=gt3090 SSH_COMMAND='grep -i error /var/log/docker/client_messenger_client_messenger/client_messenger_client_messenger.log | wc -l' -v,
+.RS
+.RE
+udt check ssh HOST=192.168.1.123 SSH_SUERNAME=node1user SSH_PASSWORD=pass123 RESPONSE_TYPE=number RESPONSE_RESULT=3090 SSH_COMMAND='grep -i error /var/log/docker/client_messenger_client_messenger/client_messenger_client_messenger.log | wc -l' -v,
+.RE
+
+
+.RE
+.B ssh_group
+.RS 8
+.P
+This check is used for sending ssh query to multiple servers and compare received data with defined \fIRESPONSE_RESULT\fR.
+.RS
+.RE
+You can compare result uisng \fIRESPONSE_TYPE\fR: regexp and jsonpath
+.RS
+.RE
+If you are using RESPONSE_TYPE=jsonpath, you should define the JSONPATH_QUERY value using the jq syntax, where the specified value from the JSON return will be compared to the one defined in RESPONSE_RESULT
+.RS
+.RE
+If you are using RESPONSE_TYPE=regexp then it will compare result using regular expression.
+
+The result of this check will be saved local in '\fI/tmp/response.txt\fR'
+
+PREREQUISITES:
+.RS 2
+.I SSH_CONNECTIONS\fR(server_ip:username:password,...)
+or
+.I SERVERS\fR(all)
+.RS
+.RE
+.I RESPONSE_TYPE
+.RS
+.RE
+.I RESPONSE_RESULT
+.RS
+.RE
+.I SSH_COMMAND
+.RE
+
+OPTIONAL PARAMETERS:
+.RS 2
+.I TIMEOUT
+.RS
+.RE
+.I JSONPATH_QUERY
+.RE
+
+EXAMPLE:
+.RS 2
+udt check ssh_group SSH_CONNECTIONS=192.168.56.10:node1:123456,192.168.56.11:node2:123456,192.168.56.12:node3:123456 RESPONSE_TYPE=regexp RESPONSE_RESULT=.*Filesystem.* SSH_COMMAND=df -h,
+.RS
+.RE
+udt check ssh_group SSH_CONNECTIONS=192.168.56.10:node1:123456,192.168.56.11:node2:123456,192.168.56.12:node3:123456 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=running SSH_COMMAND="curl -s 'localhost:11185/cluster'" JSONPATH_QUERY=$.members[0].state,
+.RS
+.RE
+udt check ssh_group SSH_CONNECTIONS=192.168.56.10:node1:123456,192.168.56.11:node2:123456,192.168.56.12:node3:123456 RESPONSE_TYPE=jsonpath RESPONSE_RESULT=lt1 SSH_COMMAND="curl -s 'localhost:11185/cluster'" JSONPATH_QUERY=$.members[0].lag
+
+.RE
+
+\#.RE
+\#.B ssl
+\#.RS 8
+\#.P
+\#TEXT
+\#
+\#
+\#.RE
+\#.B ssl_full_chain
+\#.RS 8
+\#.P
+\#TEXT
+\#
+\#
+\#.RE
+\#.B tcp_port_open
+\#.RS 8
+\#.P
+\#TEXT
+\#
+\#.RE
+\#.B wss
+\#.RS 8
+\#.P
+\#TEXT
+\#
