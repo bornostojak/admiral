@@ -1,19 +1,51 @@
-import chalk, { ChalkInstance } from 'chalk'
-import { info } from 'console'
-import { listenerCount, stderr } from 'process'
-import { stringify } from 'querystring'
-import {inspect} from 'util'
+//import { Chalk } from 'chalk'
+import { env, stderr, stdout } from 'process'
+import chalk, { Chalk } from 'chalk'
+import { inspect } from 'util'
+import Config from './config/manager.js'
+
+let config = Config.GetLocalConfigSync();
 
 export default class log{
 
+    private static op = Boolean(stdout.isTTY) ? ' ' : ''
+    private static ed = Boolean(stdout.isTTY) ? ' ' : ''
+    private static _joint = Boolean(stdout.isTTY) ? '' : ' > '
+
+    private static _logLevel = parseInt(env["LOGLEVEL"] ?? (config?.logging?.level.toString() ?? '1'))
+    private static _debug = env["DEBUG"] !== undefined ? (!!env["DEBUG"] && env['DEBUG'] !== '0') : !!config?.logging?.debug 
+
+
+
+    private static rotBgColor(messages: string[], joiner:string = '') {
+        let parsed = []
+        messages = this._logLevel > 1 ? messages : messages.slice(-1)
+        const colorWheel = [
+            (m:string) => chalk.black(chalk.bgRgb(167, 123, 76)(m)),
+            (m:string) => chalk.black(chalk.bgRgb(111, 211, 108)(m)),
+            (m:string) => chalk.white(chalk.bgRgb(56, 77, 145)(m)),
+            (m:string) => chalk.black(chalk.bgRgb(133, 145, 98)(m)),
+            (m:string) => chalk.white(chalk.bgRgb(79, 31, 222)(m)),
+            (m:string) => chalk.black(chalk.bgRgb(200, 99, 56)(m)),
+            (m:string) => chalk.black(chalk.bgRgb(214, 107, 189)(m)),
+            (m:string) => chalk.black(chalk.bgRgb(156, 195, 15)(m))
+        ]
+        for (let i = 0; i < messages.length; i++) {
+            //let [R, G, B] = colorWheel[i%colorWheel.length]
+            //parsed.push(chalk.bgRgb(R, G, B)(log.op+messages[i]+log.ed+joiner))
+            parsed.push(colorWheel[i%colorWheel.length](log.op+messages[i]+log.ed+joiner))
+        }
+        return this._logLevel > 0 ? log._joint+parsed.join(log._joint) : ''
+    }
+
     private static colors(method:string) {
-        let options: Record<string, ChalkInstance> = {
+        let options: Record<string, Chalk> = {
             "red" : chalk.red,
             "green" : chalk.green,
             "blue" : chalk.blue,
             "yellow" : chalk.yellow,
             "magenta" : chalk.magenta,
-            "coutyan" : chalk.cyan,
+            "cyan" : chalk.cyan,
             "white" : chalk.white,
             "black" : chalk.black,
             "b" : chalk.bold,
@@ -21,45 +53,70 @@ export default class log{
             "u": chalk.underline,
         }
         if (!(method in options)) return (m:string) => m
-        return (m:string) => (<ChalkInstance>options[method])(m)
+        return (m:string) => (<Chalk>options[method])(m)
     } 
     private static initial: log = new log()
-    private _prefix: string = ""
-    constructor(prefix?: string, chalk_method: ChalkInstance|null = chalk.bgMagenta){
+    private _prefixes: string[] = []
+    //constructor(prefix?: string, chalk_method: Chalk|null = chalk.bgMagenta){
+    //   if (chalk_method)
+    //       this._prefix.push(chalk_method(`${log.op}${this._prefix}${log.ed}`))
+    constructor(prefix?: string){
         if (!prefix) return
-        this._prefix = prefix
-        if (chalk_method)
-            this._prefix = chalk_method(`[ ${this._prefix} ]`)
-
-
+        this._prefixes.push(prefix)
     }
 
-    public prefix(prefix: string, chalk_method: ChalkInstance|null = chalk.bgMagenta){
-        return new log(prefix, chalk_method)
+    public Prefix(prefix: string, chalk_method: Chalk|null = chalk.bgMagenta){
+        let tmp = new log()
+        tmp._prefixes = [...this._prefixes.map(s => s)]
+        if (prefix)
+            tmp._prefixes.push(prefix)
+        return tmp
     }
-    public log(message:any = "") {
-        let text = (this.toString(message, this._prefix))
-        log.print(text, process.stdout)
+
+    public Print(message:any = "") {
+        let text = (this.toString(message, log.rotBgColor(this._prefixes)))
+        log.write(text, stdout)
     }
-    public error(message:any = "") {
-        let preString = chalk.bgRed("[ ERROR ]")+this._prefix
+
+    public Log(message:any = "") {
+        let text = (this.toString(message, log.rotBgColor(this._prefixes)))
+        log.write(text, stdout)
+        this.logToFile(text, '')
+    }
+
+    public Error(message:any = "") {
+        let preString = chalk.bold(chalk.bgRed(log.op+"ERROR"+log.ed))+log.rotBgColor(this._prefixes)
         let text = (this.toString(message, `${preString}`))
-        log.print(text, process.stderr)
-    }
-    public debug(message:any = "") {
-        let pico = process.env["DEBUG"] == null
-        if (process.env["DEBUG"] == null) return
-        let preString = chalk.bgBlack(chalk.white("[ DEBUG ]"))+this._prefix
-        let text = (this.toString(message, `${preString}`))
-        log.print(text, process.stdout)
+        log.write(text, stderr)
+        this.logToFile(text, '')
     }
 
-    private static print(message:string, method:NodeJS.WriteStream) {
+    public Trace(message:any = "") {
+        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed))
+        let text = (this.toString(message, `${preString}`))
+        this.logToFile(text, "")
+        if (!log._debug) return
+        log.write(text, stdout)
+    }
+
+    public Debug(message:any = "") {
+        let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed))
+        let text = (this.toString(message, `${preString}`))
+        this.logToFile(text, "")
+        if (!log._debug) return
+        log.write(text, stdout)
+    }
+
+    private static write(message:string, method:NodeJS.WriteStream) {
         method.write(message)
-        let logString = message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
     }
 
-    private toString(obj: any, newLineStrat:string="") {
+    private logToFile(message:string, filePath: string) {
+        let logString = message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
+        //TODO: wirte logging to file
+    }
+
+    private toString(obj: any, newLineStart:string="") {
         let message:String;
 
         
@@ -71,9 +128,9 @@ export default class log{
         }
         let lines = message.split("\n")
         let result = ""
-        if (newLineStrat) newLineStrat += " "
+        if (newLineStart) newLineStart += " "
         for (let i = 0; i < lines.length; i++){
-            result += `${newLineStrat}${log.formatting(lines[i])}\n`
+            result += `${newLineStart}${log.formatting(lines[i])}\n`
         }
         return result
     }
@@ -82,8 +139,8 @@ export default class log{
         let match = /<[a-zA-Z]*>/g
         let infoStart = match.exec(message)
         if (infoStart === null) return message
-        let endmatch = new RegExp(infoStart[0].replace(/^</, '</'), 'g')
-        let infoEnd = endmatch.exec(message.slice(infoStart.index + infoStart[0].length))
+        let endMatch = new RegExp(infoStart[0].replace(/^</, '</'), 'g')
+        let infoEnd = endMatch.exec(message.slice(infoStart.index + infoStart[0].length))
         if (infoEnd === null) return message.slice(0,infoStart.index+infoStart[0].length)+(this.formatting(message.slice(infoStart.index+infoStart[0].length)))
         infoEnd.index += infoStart[0].length+infoStart.index
         let method = infoStart[0].replace(/^</, '').replace(/>$/, '')
@@ -94,24 +151,35 @@ export default class log{
     }
 
 
-    public static prefix(prefix: string, chalk_method: ChalkInstance|null = chalk.bgMagenta){
-        return log.initial.prefix(prefix, chalk_method)
+    /**
+     * Puts a colored prefix before every line in the log
+     * 
+     * This allow the log to be more easily readable and related to a given line of execution
+     * @param prefix 
+     * @param chalk_method 
+     */
+    public static Prefix(prefix: string, chalk_method: Chalk|null = chalk.bgMagenta){
+        return log.initial.Prefix(prefix, chalk_method)
     }
-    public static error(message:any = "") {
-        log.initial.error(message)
+    public static Error(message:any = "") {
+        log.initial.Error(message)
     }
-    public static debug(message:any = "") {
-        log.initial.debug(message)
-        //console.log(inspect(message))
+    public static Trace(message:any = "") {
+        log.initial.Trace(message)
     }
-    public static log(message:any = "") {
-        log.initial.log(message)
+    public static Debug(message:any = "") {
+        log.initial.Debug(message)
+    }
+    public static Log(message:any = "") {
+        log.initial.Log(message)
+    }
+    public static Print(message:any = "") {
+        log.initial.Print(message)
+    }
+
+    public static SetLogLevel(level :number) {
+        this._logLevel = level
     }
 
 }
 
-
-
-//log.prefix("initial testing").log("<u>formatt <b>me bold</b><u>")
-//log.prefix("initial testing").error("<u>formatt <b>me bold</b></u>")
-//log.prefix("initial testing").debug("formatt <blue><b><i>me italic</i></b></blue>")

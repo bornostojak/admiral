@@ -1,0 +1,47 @@
+.TH Motherbee 1 "2023-01-29" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
+.SH "NAME"
+mob
+\- docker swarm management tool
+
+.SH "SYNOPSIS"
+.B mob
+[OPTIONS]
+COMMANDS
+[ARGS]
+
+.SH DESCRIPTION
+.B mob
+(Motherbee) is an docker & docker swarm tool that organizes, maintains and aids in the management of the docker environment.
+The intention is to aid in maintaining and revising one codebase for multiple projects, help with upkeep,
+easy revision of specific config files and configuration parameters like environment variables.
+It can be setup to automatically commit changes to git using a predefined commit message schema.
+mob comes with the capability to connect and automatically deploy the data on all projects.
+It aims to eliminate possible service impacts by defining a specific deployment method.
+Eventually it will support keeping every user update on the config using a centralized server or a central config git repository.
+
+.SH COMMANDS
+
+.RS 4
+.B select
+[project(s)] [\-\-all]
+.RS 4
+Select what project or projects will be in use. If no project is specified, the user will be prompted from a list of the existing projects.
+
+.B \-\-all
+.RS
+Select all presently defined projects.
+.RE
+.RE
+.RE
+
+
+.RS 4
+.B close
+.RS 4
+Will close all open projects and make sure all changes are either successfully committed or tossed out or stored on a separate discarded git repository, depending on the config.
+.RE
+.RE
+
+
+
+

@@ -1,4 +1,4 @@
-.TH Motherbee 1 "2023-01-14" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
+.TH Motherbee 1 "2023-01-29" 0.1.0 "Docker swarm organization, maintenance, upkeep & deployment tool"
 .SH "NAME"
 udt-check
 \- organizes the docker swarm code and infrastructure in such a way that maintenance, upgrades, reconfiguration is easy when one codebase is shared between multiple projects

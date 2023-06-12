@@ -1,0 +1,44 @@
+.TH MOTHERBEE-SELECT 1 "2023-01-29" 0.1.0 "Motherbee project selection tool" 
+.SH NAME
+mob-select - select the currently active project
+
+.SH SYNOPSIS
+.B mob select
+[OPTIONS]
+
+.B mob select
+<PROJECT> [OPTIONS]
+
+
+.SH DESCRIPTION
+Select a project that you want to work on.
+.RS
+.RE
+If no project was specified, \fBselect\fR will open an interactive menu for you to select a project from a list of existing and predefined projects.
+.RS
+.RE
+The projects are defined in the \fIproject.json\fR configs file.
+
+
+.SH OPTIONS
+
+.RS 4
+.B -s, --show
+.RS 4
+Show the name of the currently active project.
+.RE
+.RE
+
+.RS 4
+.B -d, --deselect
+.RS 4
+Deselect the currently active project.
+.RE
+.RE
+
+.RS 4
+.B -h, --help
+.RS 4
+Display the help menu.
+.RE
+.RE

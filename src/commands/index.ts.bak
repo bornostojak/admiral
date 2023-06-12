@@ -1,0 +1,89 @@
+import logging from "../logging.js"
+import yargs from "yargs/yargs"
+import yargsParsed, { Options } from "yargs"
+
+const log = new logging("Command Parser")
+
+let yargsCommands = [{
+    command: "select", 
+    description: "select a project", 
+    builder: () => {
+        console.log('SELECT')
+    },
+}]
+//.command("*", "missing command", (cmd) => {
+//    let command = cmd.argv._.slice(0,1).join('')
+//    if (command !== 'help')
+//        commandNotFound(command)
+//})
+
+export default function ProcessArguments(args:string[]) {
+    if (args.slice(0,1).join('') === 'help') {
+        PrintHelp()
+    }
+    let commands = BuildYargs().command(
+        "*",
+        "MISSING COMMAND",
+        (cmd) => {
+            commandNotFound(cmd._.slice(0,1).join())
+        }
+    )
+    //let commands = yargs(args).help(false)
+        //let commands = yargsCommands
+        //.command("*", "missing command", (cmd) => {
+        //    let command = cmd.argv._.slice(0,1).join('')
+        //    if (command !== 'help')
+        //        commandNotFound(command)
+        //}).parse(args)
+
+        //let firstCommand = commands._.slice(0,1).join('')
+    //commands.command('help', 'print help', (aas) => {
+    //    let helpArguments = Object(aas.argv)
+    //    delete helpArguments["_"]
+    //    delete helpArguments["$0"]
+    //    console.log({helpArguments})
+    //    process.exit(0)
+    //}).command("*", "missing command", (cmd) => {
+    //    commandNotFound(cmd.argv._.slice(0,1).join('').toString())
+    //    process.exit(0)
+    //}).parse(args)
+
+    
+    //switch (firstCommand){
+    //    default:
+    //        commandNotFound(command)
+    //        break
+    //}
+
+}
+
+function commandNotFound(command:string) {
+    let run = process.argv[0].split('/').slice(-1).join('') === 'node'
+        ? process.argv.slice(0,2).map(f => f.split('/').slice(-1).join('')).join(' ')
+        : process.argv[0].split('/').slice(-1).join('')
+    log.log("<b>MISSING COMMAND</b>")
+    log.log(`  <b><red>${command}</red></b> is NOT a recognized command!`)
+    log.log()
+    log.log(`To see all available commands, run:\n  <cyan>${run} help</cyan>`)
+    log.log()
+    process.exit(1)
+}
+
+
+export function BuildYargs(args?:string[]) {
+    let yr = args ? yargsParsed : yargs(args)
+    for(let i = 0; i< yargsCommands.length; i++){
+        let y = yargsCommands[i]
+        yr = yr.command(y.command, y.description, y.builder)
+    }
+    return yr
+}
+export function PrintHelp() {
+    //TODO: print help
+
+    BuildYargs().help().showHelp()
+
+
+    process.exit(0)
+
+}

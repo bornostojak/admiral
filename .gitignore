@@ -2,3 +2,5 @@ node_modules/
 dist/
 .research/
 *.map
+
+local_config_folder
