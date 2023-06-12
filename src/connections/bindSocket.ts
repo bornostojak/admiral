@@ -1,7 +1,5 @@
 import { Client } from 'ssh2';
-import {fstat, readFileSync, unlinkSync} from 'fs';
 import net from "net";
-import { exit } from 'process';
 import log from '../logging.js'
 
 //let DOCKER_SOCKET = '/var/run/docker.sock'

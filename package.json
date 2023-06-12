@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node src/connect.js",
+    "test": "node dist/connect.js",
     "build": "tsc",
     "start": "node dist/index.js",
     "startbg": "node dist/index.js &",

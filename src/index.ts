@@ -11,7 +11,7 @@ let sshConnectionParameters = {
     username: 'root',
     password: 'bint123'
 }
-let socket = bindSocket(remoteSocketPath, localSocketPath, sshConnectionParameters)
+bindSocket(remoteSocketPath, localSocketPath, sshConnectionParameters)
 
 
 
