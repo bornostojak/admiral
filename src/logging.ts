@@ -2,9 +2,9 @@
 import { env, stderr, stdout } from 'process'
 import chalk, { Chalk } from 'chalk'
 import { inspect } from 'util'
-import Config from './config/manager.js'
+import LoggingConfig from './config/logging'
 
-let config = Config.GetLocalConfigSync();
+let loggingConfig = LoggingConfig.Load()
 
 export default class log{
 
@@ -12,8 +12,10 @@ export default class log{
     private static ed = Boolean(stdout.isTTY) ? ' ' : ''
     private static _joint = Boolean(stdout.isTTY) ? '' : ' > '
 
-    private static _logLevel = parseInt(env["LOGLEVEL"] ?? (config?.logging?.level.toString() ?? '1'))
-    private static _debug = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(config?.logging?.debug?.toString() ?? "0"))
+    // private static _logLevel = parseInt(env["LOGLEVEL"] ?? (loggingConfig?.Level.toString() ?? '1'))
+    // private static _debug = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(loggingConfig.Level?.debug?.toString() ?? "0"))
+    private static _logLevel = parseInt(env["LOGLEVEL"] ?? (loggingConfig?.Level.toString() ?? '1'))
+    private static _depth = 0 + (env["DEBUG"] !== undefined && !isNaN(parseInt(env["DEBUG"])) ? parseInt(env["DEBUG"]) : parseInt(loggingConfig.Depth?.toString() ?? "0"))
 
 
 
@@ -69,7 +71,7 @@ export default class log{
     }
 
     public Print(message:any = "", logMessage:boolean=false) {
-        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"PRINT"+log.ed+log._joint)))))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._depth == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"PRINT"+log.ed+log._joint)))))
         log.write(text, stdout)
         if (logMessage)
             this.logToFile(message, '')
@@ -77,9 +79,9 @@ export default class log{
     }
 
     public Log(message:any = "") {
-        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"LOG"+log.ed+log._joint)))))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes) + (log._depth == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"LOG"+log.ed+log._joint)))))
         this.logToFile(message, '')
-        if (log._debug < 1) return
+        if (log._depth < 1) return
         log.write(text, stdout)
     }
 
@@ -91,10 +93,10 @@ export default class log{
     }
 
     public Info(message:any = "") {
-        let preString = log.rotBgColor(this._prefixes) + (log._debug == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"INFO"+log.ed+log._joint)))
+        let preString = log.rotBgColor(this._prefixes) + (log._depth == 0 ? '' : chalk.bgBlack(chalk.white(log.op+"INFO"+log.ed+log._joint)))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(message, "")
-        if (log._debug < 1) return
+        if (log._depth < 1) return
         log.write(text, stdout)
     }
 
@@ -102,7 +104,7 @@ export default class log{
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(message, "")
-        if (log._debug < 2) return
+        if (log._depth < 2) return
         log.write(text, stdout)
     }
 
@@ -110,7 +112,7 @@ export default class log{
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed+log._joint))
         let text = (ConvertToString(message, `${preString}`))
         this.logToFile(message, "")
-        if (log._debug < 1) return
+        if (log._depth < 1) return
         log.write(text, stdout)
     }
 

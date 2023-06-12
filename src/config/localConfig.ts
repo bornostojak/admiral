@@ -26,10 +26,10 @@ export default class LocalConfig {
 
     /**
      * 
-     * @param indent the indentation of the JSON string
+     * @param indent the indentation of the a JSON object
      * @returns the JSON string
      */
-    public toJSON(indent?: number) : string {
+    public toJSON() {
         let {Username, Password, PrivateKey, PublicKey, ..._} = this.SSH
         let {Visual, Editor, ...__} = this
         let json = {
@@ -39,7 +39,7 @@ export default class LocalConfig {
             Logging: this.Logging.toObject(),
             SSH: {Username, Password, PrivateKey, PublicKey},
         }
-        return indent ? JSON.stringify(json, null, indent) : JSON.stringify(json)
+        return json
     }
 
     /**
@@ -100,13 +100,11 @@ export default class LocalConfig {
             LocalConfig.InitLocalConfig(config)
             return config
         }
-        // convert to JSON string, ignore undefined values
-        // let localConfigJson = JSON.stringify(config, (key, val) => {
-        //     if (val !== undefined) {
-        //         return val
-        //     }
-        // }, 4)
-        writeFileSync(path, config.toJSON(4))
+        writeFileSync(path, JSON.stringify(config, (key, val) => {
+            if (val !== undefined) {
+                return val
+            }
+        }, 4))
         return config
     }
 
@@ -158,5 +156,6 @@ export default class LocalConfig {
         if (!existsSync(configPath)) {
             return LocalConfig.Save(config ?? new LocalConfig(), ResolveUri(configPath))
         }
+        return LocalConfig.Load()
     }
 }
