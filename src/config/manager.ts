@@ -6,7 +6,7 @@ import { stderr, stdout } from 'process'
 import chalk from 'chalk'
 import { SSHCredentials } from './ssh.js';
 
-export const ProjectName = 'Derrik'
+export const ProjectName = 'Admiral'
 
 interface ISSH {
     username: string|undefined,
@@ -105,15 +105,15 @@ export default class Config {
 
 
 
-//TODO: support a location that can be defined using DERRIK_CONFIG env variable, useful for testing
+//TODO: support a location that can be defined using ADMIRAL_CONFIG env variable, useful for testing
 export const Locations = {
         global: [
-            '/etc/derrik'
+            '/etc/admiral'
             ].map(f => ResolveUri(f)),
         local:[
-            ".derrik",
-            "~/.derrik",
-            "~/.config/derrik/"
+            ".admiral",
+            "~/.admiral",
+            "~/.config/admiral/"
         ].map(f => ResolveUri(f))
     }
 export function GetLocalConfigLocation(options: any|undefined = undefined) {

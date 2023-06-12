@@ -147,7 +147,7 @@ export class Status {
      */
     public static Directory(): string {
         // default directories, in order of priority
-        let localDir = ResolveUri('~/.config/derrik')
+        let localDir = ResolveUri('~/.config/admiral')
         // if (!existsSync(localDir)) {
         //     mkdirSync(localDir, { recursive: true })
         // }
@@ -157,10 +157,10 @@ export class Status {
 
     /**
      * 
-     * Generates a default status file in the default ~/.config/derrik folder
+     * Generates a default status file in the default ~/.config/admiral folder
      */
     public static InitStatus(status?: Status) : Status {
-        let directory = ResolveUri("~/.config/derrik")
+        let directory = ResolveUri("~/.config/admiral")
         if (!existsSync(directory)) {
             mkdirSync(directory, {recursive: true})
         }

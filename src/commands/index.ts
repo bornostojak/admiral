@@ -94,10 +94,10 @@ export function PrintHelp() {
     //TODO: print help
     
     log.Print("USAGE")
-    log.Print("    <red>mob</red> [OPTIONS] COMMAND [ARGS]")
+    log.Print("    <red>admiral</red> [OPTIONS] COMMAND [ARGS]")
     log.Print()
     log.Print("DESCRIPTION")
-    log.Print("    <red>mob</red> (a.k.a derrik) is a command line program with the intention of making")
+    log.Print("    <red>admiral</red> is a command line program with the intention of making")
     log.Print("    the distribution, adjustment and deployment of one docker swarm codebase to multiple projects")
     log.Print("    easier, streamlined and sysadmin friendly. We will tear or hairs out, so you don't have to.")
     log.Print()

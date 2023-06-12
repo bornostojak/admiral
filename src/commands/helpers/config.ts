@@ -5,7 +5,7 @@ import { ResolveUri } from "../../helper/path";
 
 
 export function validateOrInitLocalConfigDirectoryWithDefaults() {
-    let directories = ['.derrik', '~/.derrik', '~/.config/derrik'].map(d => ResolveUri(d))
+    let directories = ['.admiral', '~/.admiral', '~/.config/admiral'].map(d => ResolveUri(d))
     let existingLocations = directories.filter(d => existsSync(d))
     if (existingLocations.length < 1) {
         LocalConfig.InitLocalConfig()

@@ -78,7 +78,7 @@ export default class LoggingConfig implements ILogging {
         }
     }
     public static Load() : LoggingConfig {
-        let path = [ ".derrik", "~/.derrik", "~/.config/derrik/" ]
+        let path = [ ".admiral", "~/.admiral", "~/.config/admiral/" ]
             .map(f => ResolveUri(f))
             .filter(x => existsSync(x))[0]
 

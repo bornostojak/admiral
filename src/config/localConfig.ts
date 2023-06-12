@@ -5,7 +5,7 @@ import logging from '../logging.js'
 import LoggingConfig from './logging.js'
 import { exit } from 'process';
 
-export const ProjectName = 'Derrik'
+export const ProjectName = 'Admiral'
 
 let Log = new logging("Config(Local)")
 
@@ -83,7 +83,7 @@ export default class LocalConfig {
             else
                 Log.Error(`<red><b>A local configuration hasn't been defined yet!</b></red>`)
             Log.Error()
-            Log.Error(`run <cyan><b>derrik config init</b></cyan>`)
+            Log.Error(`run <cyan><b>admiral config init</b></cyan>`)
             process.exit(1)
         }
     }
@@ -128,7 +128,7 @@ export default class LocalConfig {
      */
     public static Directory(initIfMissing?: boolean): string {
         // default directories, in order of priority
-        let directories = [".derrik", "~/.derrik", "~/.config/derrik"].map(d => ResolveUri(d))
+        let directories = [".admiral", "~/.admiral", "~/.config/admiral"].map(d => ResolveUri(d))
         let location: string = ''
         for (location of directories) {
             // skip if not missing
@@ -136,7 +136,7 @@ export default class LocalConfig {
             // return the first existing path
             return location
         }
-        // finally, if nothing exists, create the last folder: ~/.config/derrik
+        // finally, if nothing exists, create the last folder: ~/.config/admiral
         if (initIfMissing) {
             this.InitLocalConfig()
         }
@@ -145,10 +145,10 @@ export default class LocalConfig {
     
     /**
      * 
-     * Generates a default local config in the default ~/.config/derrik folder
+     * Generates a default local config in the default ~/.config/admiral folder
      */
     public static InitLocalConfig(config?: LocalConfig) {
-        let directory = ResolveUri("~/.config/derrik")
+        let directory = ResolveUri("~/.config/admiral")
         if (!existsSync(directory)) {
             mkdirSync(directory, {recursive: true})
         }

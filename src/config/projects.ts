@@ -68,7 +68,7 @@ export class ProjectConfig {
     }
 
     public static Directory() {
-        let projectsPath = ResolveUri("~/.config/derrik/projects")
+        let projectsPath = ResolveUri("~/.config/admiral/projects")
         if (!existsSync(projectsPath)) {
             mkdirSync(projectsPath, { recursive: true })
         }
