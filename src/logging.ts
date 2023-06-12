@@ -31,14 +31,12 @@ export default class log{
             (m:string) => chalk.black(chalk.bgRgb(156, 195, 15)(m))
         ]
         for (let i = 0; i < messages.length; i++) {
-            //let [R, G, B] = colorWheel[i%colorWheel.length]
-            //parsed.push(chalk.bgRgb(R, G, B)(log.op+messages[i]+log.ed+joiner))
             parsed.push(colorWheel[i%colorWheel.length](log.op+messages[i]+log.ed+joiner))
         }
         return this._logLevel > 0 ? log._joint+parsed.join(log._joint) : ''
     }
 
-    private static colors(method:string) {
+    public static Colors(method:string) {
         let options: Record<string, Chalk> = {
             "red" : chalk.red,
             "green" : chalk.green,
@@ -57,9 +55,6 @@ export default class log{
     } 
     private static initial: log = new log()
     private _prefixes: string[] = []
-    //constructor(prefix?: string, chalk_method: Chalk|null = chalk.bgMagenta){
-    //   if (chalk_method)
-    //       this._prefix.push(chalk_method(`${log.op}${this._prefix}${log.ed}`))
     constructor(prefix?: string){
         if (!prefix) return
         this._prefixes.push(prefix)
@@ -74,26 +69,26 @@ export default class log{
     }
 
     public Print(message:any = "") {
-        let text = (this.toString(message, log.rotBgColor(this._prefixes)))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes)))
         log.write(text, stdout)
     }
 
     public Log(message:any = "") {
-        let text = (this.toString(message, log.rotBgColor(this._prefixes)))
+        let text = (ConvertToString(message, log.rotBgColor(this._prefixes)))
         log.write(text, stdout)
         this.logToFile(text, '')
     }
 
     public Error(message:any = "") {
         let preString = chalk.bold(chalk.bgRed(log.op+"ERROR"+log.ed))+log.rotBgColor(this._prefixes)
-        let text = (this.toString(message, `${preString}`))
+        let text = (ConvertToString(message, `${preString}`))
         log.write(text, stderr)
         this.logToFile(text, '')
     }
 
     public Trace(message:any = "") {
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"TRACE"+log.ed))
-        let text = (this.toString(message, `${preString}`))
+        let text = (ConvertToString(message, `${preString}`))
         this.logToFile(text, "")
         if (!log._debug) return
         log.write(text, stdout)
@@ -101,7 +96,7 @@ export default class log{
 
     public Debug(message:any = "") {
         let preString = log.rotBgColor(this._prefixes) + chalk.bgBlack(chalk.white(log.op+"DEBUG"+log.ed))
-        let text = (this.toString(message, `${preString}`))
+        let text = (ConvertToString(message, `${preString}`))
         this.logToFile(text, "")
         if (!log._debug) return
         log.write(text, stdout)
@@ -114,40 +109,6 @@ export default class log{
     private logToFile(message:string, filePath: string) {
         let logString = message.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
         //TODO: wirte logging to file
-    }
-
-    private toString(obj: any, newLineStart:string="") {
-        let message:String;
-
-        
-        if (!(obj instanceof String || typeof obj == 'string')){
-            message = inspect(obj).toString()
-        }
-        else {
-            message = obj
-        }
-        let lines = message.split("\n")
-        let result = ""
-        if (newLineStart) newLineStart += " "
-        for (let i = 0; i < lines.length; i++){
-            result += `${newLineStart}${log.formatting(lines[i])}\n`
-        }
-        return result
-    }
-
-    private static formatting(message:string): string {
-        let match = /<[a-zA-Z]*>/g
-        let infoStart = match.exec(message)
-        if (infoStart === null) return message
-        let endMatch = new RegExp(infoStart[0].replace(/^</, '</'), 'g')
-        let infoEnd = endMatch.exec(message.slice(infoStart.index + infoStart[0].length))
-        if (infoEnd === null) return message.slice(0,infoStart.index+infoStart[0].length)+(this.formatting(message.slice(infoStart.index+infoStart[0].length)))
-        infoEnd.index += infoStart[0].length+infoStart.index
-        let method = infoStart[0].replace(/^</, '').replace(/>$/, '')
-        let replacement = message.slice(infoStart.index+infoStart[0].length, infoEnd.index)
-        replacement = this.formatting(replacement)
-        replacement = log.colors(method)(replacement)
-        return log.formatting(message.slice(0, infoStart.index)+replacement+message.slice(infoEnd.index+infoEnd[0].length))
     }
 
 
@@ -183,3 +144,38 @@ export default class log{
 
 }
 
+
+export function Formatting(message:string): string {
+    let match = /<[a-zA-Z]*>/g
+    let infoStart = match.exec(message)
+    if (infoStart === null) return message
+    let endMatch = new RegExp(infoStart[0].replace(/^</, '</'), 'g')
+    let infoEnd = endMatch.exec(message.slice(infoStart.index + infoStart[0].length))
+    if (infoEnd === null) return message.slice(0,infoStart.index+infoStart[0].length)+(Formatting(message.slice(infoStart.index+infoStart[0].length)))
+    infoEnd.index += infoStart[0].length+infoStart.index
+    let method = infoStart[0].replace(/^</, '').replace(/>$/, '')
+    let replacement = message.slice(infoStart.index+infoStart[0].length, infoEnd.index)
+    replacement = Formatting(replacement)
+    replacement = log.Colors(method)(replacement)
+    return Formatting(message.slice(0, infoStart.index)+replacement+message.slice(infoEnd.index+infoEnd[0].length))
+}
+
+
+export function ConvertToString(obj: any, newLineStart:string="") {
+    let message:String;
+
+    
+    if (!(obj instanceof String || typeof obj == 'string')){
+        message = inspect(obj).toString()
+    }
+    else {
+        message = obj
+    }
+    let lines = message.split("\n")
+    let result = ""
+    if (newLineStart) newLineStart += " "
+    for (let i = 0; i < lines.length; i++){
+        result += `${newLineStart}${Formatting(lines[i])}\n`
+    }
+    return result
+}
