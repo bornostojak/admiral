@@ -13,11 +13,12 @@ const SELECT_SYMBOL = "+"
 const SELECT_REGEX = /^\+/
 
 export const CommandOptions : Record<string, Options> = {
-    "all": {boolean: true, alias: 'a'},
+    "all": {boolean: true, alias: 'A'},
     "help": {boolean: true, alias: 'h'},
     "active": {boolean: true, alias: 'a'},
     "deselect": {boolean: true, alias: 'd'},
-    "line": {boolean: true, alias: 'l'},
+    "list": {boolean: true, alias: 'l'},
+    "line": {boolean: true, alias: 'L'},
 }
 
 
@@ -49,9 +50,13 @@ export async function ProcessCommand(args: string[]) {
     }
     
     if (parsedArgs.active){
+        if (parsedArgs?.line) {
+            log.Print(`${status?.Active?.map(a => `<green>${a.toString()}</green>`).join(" ")}` )
+            exit(0)
+        }
         if (status?.Active?.length > 0) {
             log.Trace("Printing active projects")
-            if (parsedArgs?.line) {
+            if (parsedArgs?.list) {
                 log.Print(`${status?.Active?.map(a => `<green>${a.toString()}</green>`).join("\n")}` )
                 exit(0)
             }
@@ -221,11 +226,11 @@ function PrintHelp() {
     help.Print('  Adding <b><blue>^</blue></b> in front of the project name will <blue>remove</blue> ait to the selection.')
     help.Print('')
     help.Print('OPTIONS:')
-    help.Print(`  -a, --all         - select all available projects`)
+    help.Print(`  -A, --all         - select all available projects`)
     help.Print(`  -d, --deselect    - deselect the currently active project`)
     help.Print(`  -h, --help        - print the help message`)
     help.Print(`  -l, --list        - list the active projects line by line`)
-    help.Print(`  -s, --active      - show the current active project`)
+    help.Print(`  -a, --active      - show the current active project`)
     help.Print('')
     help.Print('ALIASED:')
     help.Print(`  <red>select</red>     -> <red>project select</red>`)

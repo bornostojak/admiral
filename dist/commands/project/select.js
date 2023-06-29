@@ -24,14 +24,15 @@ const DESELECT_REGEX = /^\^/;
 const SELECT_SYMBOL = "+";
 const SELECT_REGEX = /^\+/;
 exports.CommandOptions = {
-    "all": { boolean: true, alias: 'a' },
+    "all": { boolean: true, alias: 'A' },
     "help": { boolean: true, alias: 'h' },
     "active": { boolean: true, alias: 'a' },
     "deselect": { boolean: true, alias: 'd' },
-    "line": { boolean: true, alias: 'l' },
+    "list": { boolean: true, alias: 'l' },
+    "line": { boolean: true, alias: 'L' },
 };
 function ProcessCommand(args) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     return __awaiter(this, void 0, void 0, function* () {
         log.Trace({ select_args: args });
         let parsedArgs = yargs_1.default.help(false).options(exports.CommandOptions).parse(args);
@@ -56,13 +57,17 @@ function ProcessCommand(args) {
             }
         }
         if (parsedArgs.active) {
-            if (((_g = status === null || status === void 0 ? void 0 : status.Active) === null || _g === void 0 ? void 0 : _g.length) > 0) {
+            if (parsedArgs === null || parsedArgs === void 0 ? void 0 : parsedArgs.line) {
+                log.Print(`${(_g = status === null || status === void 0 ? void 0 : status.Active) === null || _g === void 0 ? void 0 : _g.map(a => `<green>${a.toString()}</green>`).join(" ")}`);
+                (0, process_1.exit)(0);
+            }
+            if (((_h = status === null || status === void 0 ? void 0 : status.Active) === null || _h === void 0 ? void 0 : _h.length) > 0) {
                 log.Trace("Printing active projects");
-                if (parsedArgs === null || parsedArgs === void 0 ? void 0 : parsedArgs.line) {
-                    log.Print(`${(_h = status === null || status === void 0 ? void 0 : status.Active) === null || _h === void 0 ? void 0 : _h.map(a => `<green>${a.toString()}</green>`).join("\n")}`);
+                if (parsedArgs === null || parsedArgs === void 0 ? void 0 : parsedArgs.list) {
+                    log.Print(`${(_j = status === null || status === void 0 ? void 0 : status.Active) === null || _j === void 0 ? void 0 : _j.map(a => `<green>${a.toString()}</green>`).join("\n")}`);
                     (0, process_1.exit)(0);
                 }
-                log.Print(`<green><b>Active projects</b>:</green> ${(_j = status === null || status === void 0 ? void 0 : status.Active) === null || _j === void 0 ? void 0 : _j.join(", ")}`);
+                log.Print(`<green><b>Active projects</b>:</green> ${(_k = status === null || status === void 0 ? void 0 : status.Active) === null || _k === void 0 ? void 0 : _k.join(", ")}`);
                 (0, process_1.exit)(0);
             }
             log.Print("<red>There are currently no active projects</red>");
@@ -230,11 +235,11 @@ function PrintHelp() {
     help.Print('  Adding <b><blue>^</blue></b> in front of the project name will <blue>remove</blue> ait to the selection.');
     help.Print('');
     help.Print('OPTIONS:');
-    help.Print(`  -a, --all         - select all available projects`);
+    help.Print(`  -A, --all         - select all available projects`);
     help.Print(`  -d, --deselect    - deselect the currently active project`);
     help.Print(`  -h, --help        - print the help message`);
     help.Print(`  -l, --list        - list the active projects line by line`);
-    help.Print(`  -s, --active      - show the current active project`);
+    help.Print(`  -a, --active      - show the current active project`);
     help.Print('');
     help.Print('ALIASED:');
     help.Print(`  <red>select</red>     -> <red>project select</red>`);
