@@ -5,9 +5,11 @@ import { Status } from '../../config/status'
 import { exit } from 'process'
 import path from 'path'
 import Colorizer from 'json-colorizer'
+import { clear } from 'console'
+
 import * as List from './list'
 import * as Add from './add'
-import { clear } from 'console'
+import * as Script from './script'
 
 let log = new logging("Server")
 
@@ -35,6 +37,11 @@ export async function ProcessCommand(args: string[]){
 
     if (subcommand == "add" ) {
         await Add.ProcessCommand(args.slice(1))
+        exit(0)
+    }
+
+    if (subcommand == "script" ) {
+        await Script.ProcessCommand(args.slice(1))
         exit(0)
     }
 
