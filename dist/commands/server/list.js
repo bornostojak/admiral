@@ -46,6 +46,7 @@ let log = new logging_1.default("Servers list");
 exports.CommandOptions = {
     "help": { boolean: true, alias: 'h' },
     "unveil": { boolean: true, alias: 'u' },
+    "extended": { boolean: true, alias: 'e' },
     "show": { boolean: true, alias: 's' },
     "json": { boolean: true, alias: 'j' },
     "table": { boolean: true, alias: 't' },
@@ -69,11 +70,11 @@ function ProcessCommand(args) {
             (0, process_1.exit)(1);
         }
         if (parsedArgs.table) {
-            log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))));
+            log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended))]))));
             (0, process_1.exit)(0);
         }
         if (parsedArgs.json) {
-            log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))));
+            log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended))]))));
             (0, process_1.exit)(0);
         }
         if (parsedArgs['hostname-only']) {
@@ -88,11 +89,23 @@ function ProcessCommand(args) {
             activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify([{ Servers: p.Servers.map(s => s.Hostname) }], { title: "Project", value: p.Name })));
             (0, process_1.exit)(0);
         }
-        activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => s.toJSON()), { title: "Project", value: p.Name })));
+        activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended)), { title: "Project", value: p.Name })));
         (0, process_1.exit)(0);
     });
 }
 exports.ProcessCommand = ProcessCommand;
+function ExtendedOrReducedServerJSON(server, extended) {
+    if (extended) {
+        return server;
+    }
+    return {
+        Hostname: server.Hostname,
+        IPv4: server.IPv4,
+        IPv6: server.IPv6,
+        SSHPort: server.SSHPort,
+        Tags: server.Tags
+    };
+}
 function PrintHelp() {
     let help = log.Prefix('Help');
     help.Print('USAGE:');
@@ -103,6 +116,7 @@ function PrintHelp() {
     help.Print('');
     help.Print('OPTIONS:');
     help.Print('    -s, --show');
+    help.Print('    -e, --extended             list extended server information');
     help.Print('    -u, --unveil               reveal the username and password');
     help.Print('    -j, --json                 return in JSON format');
     help.Print('    -t, --table                print servers in table format');

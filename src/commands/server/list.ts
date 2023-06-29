@@ -8,12 +8,15 @@ import path from 'path'
 
 import * as helpers from '../helpers/index'
 import ProjectConfig from '../../config/project'
+import { ServerConfig } from 'ssh2'
+import Server from '../../config/server'
 
 let log = new logging("Servers list")
 
 export const CommandOptions : Record<string, Options> = {
     "help": { boolean: true, alias: 'h' },
     "unveil": { boolean: true, alias: 'u' },
+    "extended": { boolean: true, alias: 'e' },
     "show": { boolean: true, alias: 's' },
     "json": { boolean: true, alias: 'j' },
     "table": { boolean: true, alias: 't' },
@@ -41,12 +44,12 @@ export async function ProcessCommand(args: string[]){
 
     
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))))
+        log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]))))
         exit(0)
     }
     
     if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => s.toJSON())]))))
+        log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]))))
         exit(0)
     }
     
@@ -64,11 +67,24 @@ export async function ProcessCommand(args: string[]){
         exit(0)
     }
     
-    activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => s.toJSON()), {title: "Project", value: p.Name})))
+    activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean)), {title: "Project", value: p.Name})))
     exit(0)
 
 }
 
+function ExtendedOrReducedServerJSON(server: Server, extended: boolean) {
+    if (extended) {
+        return server
+    }
+    return {
+        Hostname: server.Hostname,
+        IPv4: server.IPv4,
+        IPv6: server.IPv6,
+        SSHPort: server.SSHPort,
+        Tags: server.Tags
+    }
+
+}
 
 function PrintHelp() {
     let help = log.Prefix('Help')
@@ -80,6 +96,7 @@ function PrintHelp() {
     help.Print('')
     help.Print('OPTIONS:')
     help.Print('    -s, --show')
+    help.Print('    -e, --extended             list extended server information')
     help.Print('    -u, --unveil               reveal the username and password')
     help.Print('    -j, --json                 return in JSON format')
     help.Print('    -t, --table                print servers in table format')
