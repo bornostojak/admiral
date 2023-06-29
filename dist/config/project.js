@@ -24,13 +24,14 @@ const server_1 = __importDefault(require("./server"));
 const log = new logging_1.default('Config(project)');
 var ProjectStatus;
 (function (ProjectStatus) {
+    ProjectStatus[ProjectStatus["initialized"] = 8] = "initialized";
     ProjectStatus[ProjectStatus["suspended"] = 4] = "suspended";
     ProjectStatus[ProjectStatus["active"] = 2] = "active";
     ProjectStatus[ProjectStatus["inactive"] = 1] = "inactive";
 })(ProjectStatus = exports.ProjectStatus || (exports.ProjectStatus = {}));
 class ProjectConfig {
     constructor() {
-        this.Status = ProjectStatus.inactive;
+        this.Status = ProjectStatus.initialized;
         this.Name = "";
         this.Path = "";
         this.Servers = [];
@@ -122,6 +123,9 @@ class ProjectConfig {
                         break;
                     case "suspended":
                         tmp.Status = ProjectStatus.suspended;
+                        break;
+                    case "initialized":
+                        tmp.Status = ProjectStatus.initialized;
                         break;
                     default:
                         tmp.Status = ProjectStatus.inactive;

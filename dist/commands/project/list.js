@@ -120,6 +120,7 @@ function ProcessCommand(args) {
                 case project_js_1.ProjectStatus.active: return [p.Name, `<green>${project_js_1.ProjectStatus[p.Status].slice(0, 1).toUpperCase() + project_js_1.ProjectStatus[p.Status].slice(1)}</green>`];
                 case project_js_1.ProjectStatus.inactive: return [p.Name, `<red>${project_js_1.ProjectStatus[p.Status].slice(0, 1).toUpperCase() + project_js_1.ProjectStatus[p.Status].slice(1)}</red>`];
                 case project_js_1.ProjectStatus.suspended: return [p.Name, `<blue>${project_js_1.ProjectStatus[p.Status].slice(0, 1).toUpperCase() + project_js_1.ProjectStatus[p.Status].slice(1)}</blue>`];
+                case project_js_1.ProjectStatus.initialized: return [p.Name, `<yellow>${project_js_1.ProjectStatus[p.Status].slice(0, 1).toUpperCase() + project_js_1.ProjectStatus[p.Status].slice(1)}</yellow>`];
             }
         });
         let statusesObject = Object.fromEntries(projectStatusArray);

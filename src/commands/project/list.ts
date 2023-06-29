@@ -95,6 +95,7 @@ export async function ProcessCommand(args: string[]) {
             case ProjectStatus.active: return [p.Name, `<green>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</green>`]
             case ProjectStatus.inactive: return [p.Name, `<red>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</red>`]
             case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</blue>`]
+            case ProjectStatus.initialized: return [p.Name, `<yellow>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</yellow>`]
 
         }
     })

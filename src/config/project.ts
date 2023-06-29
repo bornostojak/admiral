@@ -9,6 +9,7 @@ import Server from './server'
 const log = new logging('Config(project)')
 
 export enum ProjectStatus {
+    initialized = 8,
     suspended = 4,
     active = 2,
     inactive = 1,
@@ -16,7 +17,7 @@ export enum ProjectStatus {
 
 export default class ProjectConfig {
 
-    public Status: ProjectStatus = ProjectStatus.inactive;
+    public Status: ProjectStatus = ProjectStatus.initialized;
     public Name: string = ""
     public Path: string = ""
     public Servers: Server[] = []
@@ -115,6 +116,9 @@ export default class ProjectConfig {
                         break
                     case "suspended":
                         tmp.Status = ProjectStatus.suspended
+                        break
+                    case "initialized":
+                        tmp.Status = ProjectStatus.initialized
                         break
                     default:
                         tmp.Status = ProjectStatus.inactive
