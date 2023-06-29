@@ -21,7 +21,7 @@ export const CommandOptions : Record<string, Options> = {
     "json": { boolean: true, alias: 'j' },
     "table": { boolean: true, alias: 't' },
     "hostname": { boolean: true },
-    "hostname-only": { boolean: true },
+    "hostname-only": { boolean: true, alias: "H" },
 }
 
 export async function ProcessCommand(args: string[]){

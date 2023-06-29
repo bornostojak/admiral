@@ -51,7 +51,7 @@ exports.CommandOptions = {
     "json": { boolean: true, alias: 'j' },
     "table": { boolean: true, alias: 't' },
     "hostname": { boolean: true },
-    "hostname-only": { boolean: true },
+    "hostname-only": { boolean: true, alias: "H" },
 };
 function ProcessCommand(args) {
     return __awaiter(this, void 0, void 0, function* () {
