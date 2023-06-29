@@ -33,12 +33,14 @@ export enum LoggingLevelEnum {
 
 interface ILogging {
     Level: LoggingLevelEnum
+    Color: boolean
 }
 
 
 export default class LoggingConfig implements ILogging {
     public Level: LoggingLevelEnum = LoggingLevelEnum.error
     public Depth: LoggingDepthEnum = LoggingDepthEnum.off
+    public Color: boolean = true 
 
     constructor(loggingData: LoggingConfig);
     constructor({ ...loggingData }: { [key: string]: string });
@@ -47,13 +49,16 @@ export default class LoggingConfig implements ILogging {
         if (!args1) return this
         this.Level = Object.entries(LoggingLevelEnum).filter(([key, val]) => val === args1.Level ?? 'error').map(([k,v]) => v as LoggingLevelEnum)[0] ?? LoggingLevelEnum.error
         this.Depth = Object.entries(LoggingDepthEnum).filter(([key, val]) => val === args1.Depth ?? 'off').map(([k,v]) => v as LoggingDepthEnum)[0] ?? LoggingDepthEnum.off
+        this.Color = !!args1.Color
         return this
     }
 
-    public toObject() : {Level: string, Depth: string} {
+    public toObject() : {Level: string, Depth: string, Color: boolean} {
         return {
             Level: Object.entries(LoggingLevelEnum).filter(([k,v]) => v === this.Level)[0][0] ?? 'error',
-            Depth: Object.entries(LoggingDepthEnum).filter(([k,v]) => v === this.Depth)[0][0] ?? 'off'
+            Depth: Object.entries(LoggingDepthEnum).filter(([k,v]) => v === this.Depth)[0][0] ?? 'off',
+            Color: this.Color
+            
         }
     }
 
@@ -61,7 +66,7 @@ export default class LoggingConfig implements ILogging {
         try {
             return indent ? JSON.stringify(this.toObject(), null, indent) : JSON.stringify(this.toObject()) 
         } catch {
-            let obj = {Level: 'error', Depth: 'off'}
+            let obj = {Level: 'error', Depth: 'off', Color: true}
             return indent ? JSON.stringify(obj, null, indent) : JSON.stringify(obj) 
         }
     }
@@ -72,6 +77,7 @@ export default class LoggingConfig implements ILogging {
             let tmp = new LoggingConfig()
             // tmp.Level = Object.entries(LoggingLevelEnum).filter(([k,v]) => (k === (localConfigObj['Level'].toString() as string).toLowerCase())).map(([k,v]) => v as LoggingLevelEnum)[0] ?? LoggingLevelEnum.error
             // tmp.Depth = Object.entries(LoggingDepthEnum).filter(([k,v]) => (k === (localConfigObj['Depth'].toString() as string).toLowerCase())).map(([k,v]) => v as LoggingDepthEnum)[0] ?? LoggingDepthEnum.off
+            tmp.Color = "Color" in localConfigObj?.Logging ? !!localConfigObj?.Logging?.Color : true
             switch(localConfigObj?.Logging?.Level ?? 'error') {
                 case "1":
                 case "error":

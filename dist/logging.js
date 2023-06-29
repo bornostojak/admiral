@@ -49,7 +49,7 @@ class log {
             "i": chalk_1.default.italic,
             "u": chalk_1.default.underline,
         };
-        if (!(method in options))
+        if (!(method in options) || !loggingConfig.Color)
             return (m) => m;
         return (m) => options[method](m);
     }

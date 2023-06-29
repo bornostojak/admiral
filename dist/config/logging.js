@@ -31,17 +31,20 @@ class LoggingConfig {
         var _a, _b;
         this.Level = LoggingLevelEnum.error;
         this.Depth = LoggingDepthEnum.off;
+        this.Color = true;
         if (!args1)
             return this;
         this.Level = (_a = Object.entries(LoggingLevelEnum).filter(([key, val]) => { var _a; return (_a = val === args1.Level) !== null && _a !== void 0 ? _a : 'error'; }).map(([k, v]) => v)[0]) !== null && _a !== void 0 ? _a : LoggingLevelEnum.error;
         this.Depth = (_b = Object.entries(LoggingDepthEnum).filter(([key, val]) => { var _a; return (_a = val === args1.Depth) !== null && _a !== void 0 ? _a : 'off'; }).map(([k, v]) => v)[0]) !== null && _b !== void 0 ? _b : LoggingDepthEnum.off;
+        this.Color = !!args1.Color;
         return this;
     }
     toObject() {
         var _a, _b;
         return {
             Level: (_a = Object.entries(LoggingLevelEnum).filter(([k, v]) => v === this.Level)[0][0]) !== null && _a !== void 0 ? _a : 'error',
-            Depth: (_b = Object.entries(LoggingDepthEnum).filter(([k, v]) => v === this.Depth)[0][0]) !== null && _b !== void 0 ? _b : 'off'
+            Depth: (_b = Object.entries(LoggingDepthEnum).filter(([k, v]) => v === this.Depth)[0][0]) !== null && _b !== void 0 ? _b : 'off',
+            Color: this.Color
         };
     }
     toJSON(indent) {
@@ -49,18 +52,19 @@ class LoggingConfig {
             return indent ? JSON.stringify(this.toObject(), null, indent) : JSON.stringify(this.toObject());
         }
         catch (_a) {
-            let obj = { Level: 'error', Depth: 'off' };
+            let obj = { Level: 'error', Depth: 'off', Color: true };
             return indent ? JSON.stringify(obj, null, indent) : JSON.stringify(obj);
         }
     }
     static fromJSON(jsonData) {
-        var _a, _b, _c, _d;
+        var _a, _b, _c, _d, _e;
         try {
             let localConfigObj = JSON.parse(jsonData);
             let tmp = new LoggingConfig();
             // tmp.Level = Object.entries(LoggingLevelEnum).filter(([k,v]) => (k === (localConfigObj['Level'].toString() as string).toLowerCase())).map(([k,v]) => v as LoggingLevelEnum)[0] ?? LoggingLevelEnum.error
             // tmp.Depth = Object.entries(LoggingDepthEnum).filter(([k,v]) => (k === (localConfigObj['Depth'].toString() as string).toLowerCase())).map(([k,v]) => v as LoggingDepthEnum)[0] ?? LoggingDepthEnum.off
-            switch ((_b = (_a = localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) === null || _a === void 0 ? void 0 : _a.Level) !== null && _b !== void 0 ? _b : 'error') {
+            tmp.Color = "Color" in (localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) ? !!((_a = localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) === null || _a === void 0 ? void 0 : _a.Color) : true;
+            switch ((_c = (_b = localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) === null || _b === void 0 ? void 0 : _b.Level) !== null && _c !== void 0 ? _c : 'error') {
                 case "1":
                 case "error":
                     tmp.Level = LoggingLevelEnum.error;
@@ -84,7 +88,7 @@ class LoggingConfig {
                 default:
                     tmp.Level = LoggingLevelEnum.error;
             }
-            switch ((_d = (_c = localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) === null || _c === void 0 ? void 0 : _c.Depth) !== null && _d !== void 0 ? _d : 'off') {
+            switch ((_e = (_d = localConfigObj === null || localConfigObj === void 0 ? void 0 : localConfigObj.Logging) === null || _d === void 0 ? void 0 : _d.Depth) !== null && _e !== void 0 ? _e : 'off') {
                 case "0":
                 case "off":
                     tmp.Depth = LoggingDepthEnum.off;
@@ -103,7 +107,7 @@ class LoggingConfig {
             }
             return tmp;
         }
-        catch (_e) {
+        catch (_f) {
             return new LoggingConfig();
         }
     }

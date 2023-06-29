@@ -52,8 +52,8 @@ export default class log{
             "i": chalk.italic,
             "u": chalk.underline,
         }
-        if (!(method in options)) return (m:string) => m
-        return (m:string) => (<Chalk>options[method])(m)
+        if (!(method in options) || !loggingConfig.Color) return (m:string) => m
+        return (m:string) => (options[method] as Chalk)(m)
     } 
     private static initial: log = new log()
     private _prefixes: string[] = []
