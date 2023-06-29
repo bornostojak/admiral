@@ -88,6 +88,7 @@ function PrintHelp() {
     help.Print('    Manager servers associated with active projects.');
     help.Print('');
     help.Print('COMMANDS:');
+    help.Print('    <red>add</red>                        print the summarized information for servers of active projects');
     help.Print('    <red>list, ls</red>                   list servers for active projects');
     help.Print('    <red>info</red>                       print the full information for servers of active projects');
     help.Print('    <red>summary</red>                    print the summarized information for servers of active projects');
