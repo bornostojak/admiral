@@ -19,7 +19,11 @@ const log = new logging("Command Parser")
 
 // separate the last output of the command with and empty line
 // for easier reading purposes
-process.on('exit', () => {
+process.on('exit', (code) => {
+    if (code === -1) {
+        process.exitCode = 0
+        return
+    }
     console.log()
 })
 

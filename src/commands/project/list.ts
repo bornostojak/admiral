@@ -75,7 +75,7 @@ export async function ProcessCommand(args: string[]) {
         projects.forEach(p => {
             log.Print(`${p.Name}`)
         })
-        exit(0)
+        exit(-1)
     }
     if (!existsSync(`${ProjectConfig.Directory()}`)) {
         log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${ProjectConfig.Directory()}/projects"</cyan>`)

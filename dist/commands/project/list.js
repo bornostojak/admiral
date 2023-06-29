@@ -101,7 +101,7 @@ function ProcessCommand(args) {
             projects.forEach(p => {
                 log.Print(`${p.Name}`);
             });
-            (0, process_1.exit)(0);
+            (0, process_1.exit)(-1);
         }
         if (!(0, fs_1.existsSync)(`${project_js_1.default.Directory()}`)) {
             log.Error(`No <b>projects</b> location detected\nPlease generate a projects location at <cyan>"${project_js_1.default.Directory()}/projects"</cyan>`);

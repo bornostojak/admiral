@@ -52,7 +52,11 @@ const project_js_1 = __importDefault(require("../config/project.js"));
 const log = new logging_js_1.default("Command Parser");
 // separate the last output of the command with and empty line
 // for easier reading purposes
-process.on('exit', () => {
+process.on('exit', (code) => {
+    if (code === -1) {
+        process.exitCode = 0;
+        return;
+    }
     console.log();
 });
 function ProcessArguments(args) {
