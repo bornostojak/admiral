@@ -44,12 +44,18 @@ export async function ProcessCommand(args: string[]){
 
     
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]))))
+        let projectServerInfo  = Object.fromEntries(activeProjects.map(p => {
+            return [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]
+        }))
+        log.Print(helpers.Json.toTableString(projectServerInfo))
         exit(0)
     }
     
     if (parsedArgs.json) {
-        log.Print(helpers.Json.ColorizedJSON(Object.fromEntries(activeProjects.map(p => [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]))))
+        let projectServerInfo  = Object.fromEntries(activeProjects.map(p => {
+            return [[p.Name], p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean))]
+        }))
+        log.Print(helpers.Json.ColorizedJSON(projectServerInfo))
         exit(0)
     }
     
@@ -63,11 +69,15 @@ export async function ProcessCommand(args: string[]){
     }
     
     if (parsedArgs.hostname) {
-        activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify([{Servers: p.Servers.map(s => s.Hostname)}], {title: "Project", value: p.Name})))
+        activeProjects.map(p => {
+            log.Print(helpers.Json.toIndentedStringify([{Servers: p.Servers.map(s => s.Hostname)}], {title: "Project", value: p.Name}))
+        })
         exit(0)
     }
     
-    activeProjects.map(p => log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean)), {title: "Project", value: p.Name})))
+    activeProjects.map(p => {
+        log.Print(helpers.Json.toIndentedStringify(p.Servers.map(s => ExtendedOrReducedServerJSON(s, parsedArgs.extended as boolean)), {title: "Project", value: p.Name}))
+    })
     exit(0)
 
 }
