@@ -131,6 +131,9 @@ export function PrintHelp() {
     log.Print("    <red>exfiltrate</red>              serialize the current state of the stack")
     log.Print("    <red>dump</red>                    dump the current state of the docker stacks into a <project_name>.tar.gz file ")
     log.Print()
+    log.Print("  Verification:")
+    log.Print("    <red>doctor</red>                  verify that all of the configurations are valid")
+    log.Print()
 
     process.exit(0)
 
