@@ -18,7 +18,7 @@ export const LocalProjectDirectory = path.join(LocalConfig.Directory(), 'project
 
 export const CommandOptions: Record<string, Options> = {
     "help": { boolean: true, alias: 'h' },
-    "all": { boolean: true, alias: 'a' },
+    "active": { boolean: true, alias: 'a' },
     "list": { boolean: true, alias: 'l' },
     "table": { boolean: true, alias: 't' },
     "json": { boolean: true, alias: 'j' },
@@ -44,7 +44,7 @@ export async function ProcessCommand(args: string[]) {
         exit(1)
     }
 
-    if (!parsedArgs.all) {
+    if (parsedArgs.active) {
         projects = projects.filter(p => status.Active.includes(p.Name))
     }
 
@@ -116,7 +116,7 @@ function PrintHelp() {
     help.Print('OPTIONS:')
     help.Print('    -h, --help                 print help')
     help.Print('    -l, --list                 only list project names, suitable for piping')
-    help.Print('    -a, --all                  list all existing and defined projects')
+    help.Print('    -a, --active               list only active projects')
     help.Print('    --status                   list only project with the specified statuses, separated by a comma symbol (i.e. inactive,active)')
     help.Print('')
 }
