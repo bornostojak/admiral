@@ -62,7 +62,7 @@ export async function ProcessCommand(args: string[]){
 function PrintHelp() {
     let help = log.Prefix('Help')
     help.Print('USAGE:')
-    help.Print('    <red>project</red> [OPTIONS]')
+    help.Print('    <red>admiral project</red> [OPTIONS]')
     help.Print('')
     help.Print('DESCRIPTION:')
     help.Print('    Manager active projects.')
@@ -74,6 +74,7 @@ function PrintHelp() {
     help.Print('    <red>generate</red>                   generate a new project based on an existing rack')
     help.Print('    <red>list, ls</red>                   list existing projects')
     help.Print('    <red>select</red>                     select one or more projects')
+    help.Print('    <red>script</red>                     run a project specific script')
     help.Print('')
     help.Print('OPTIONS:')
     help.Print('    -h, --help                 print help')
