@@ -35,5 +35,6 @@ function PrintHelp() {
     help.Print('')
     help.Print('OPTIONS:')
     help.Print('    -h, --help                 print help')
+    help.Print('    --production-only          skip the environment definition of staging.env and theater.env')
     help.Print('')
 }
