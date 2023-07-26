@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from "fs"
 import { isNullOrUndefined } from "util"
 import { number, string } from "yargs"
-import { Json } from "../commands/helpers/index"
+import * as Json from "../helper/json"
 import { ResolveUri } from "../helper/path"
 import LocalConfig from "./localConfig"
 

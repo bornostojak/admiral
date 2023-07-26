@@ -2,10 +2,10 @@
   "name": "admiral",
   "version": "0.1.0",
   "description": "",
-  "main": "./dist/index.js",
+  "main": "./dist/cli/cli.js",
   "bin": {
-    "admiral": "./dist/index.js",
-    "adm": "./dist/index.js"
+    "admiral": "./dist/cli/cli.js",
+    "adm": "./dist/cli/cli.js"
   },
   "scripts": {
     "test": "node dist/connect.js",

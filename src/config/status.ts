@@ -46,7 +46,7 @@ export class Status {
             log.Debug("Converting Status from json string")
             let jsonParsed = JSON.parse(jsonData)
             log.Trace(JSON.stringify(jsonParsed))
-            this.Active = jsonParsed['Active'] instanceof Array<string> ? jsonParsed['Active'] : []
+            this.Active = jsonParsed['Active'] instanceof Array ? jsonParsed['Active'] : []
             this.Confirmation = {
                 Prompted: jsonParsed?.Confirmation?.Prompted ?? false,
                 State: jsonParsed?.Confirmation?.State ?? false
@@ -73,7 +73,7 @@ export class Status {
             let jsonParsed = JSON.parse(jsonData)
             log.Trace(JSON.stringify(jsonParsed))
             let tmp = new Status()
-            tmp.Active = jsonParsed['Active'] instanceof Array<string> ? jsonParsed['Active'] : []
+            tmp.Active = jsonParsed['Active'] instanceof Array ? jsonParsed['Active'] : []
             tmp.Confirmation = {
                 Prompted: jsonParsed?.Confirmation?.Prompted ?? false,
                 State: jsonParsed?.Confirmation?.State ?? false

@@ -4,12 +4,7 @@ import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
 import { Status } from './status'
-import { type } from 'os'
-import { array } from 'yargs'
-import { LocalConfig } from '.'
 import ProjectConfig from './project'
-import { ResolveUri } from '../helper/path'
-import { LocalProjectDirectory } from '../commands/project/list'
 
 const log = new logging('Servers')
 
