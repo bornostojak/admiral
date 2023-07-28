@@ -84,7 +84,7 @@ export async function ProcessCommand(args: string[]){
 
 function ExtendedOrReducedServerJSON(server: Server, extended: boolean) {
     if (extended) {
-        return server
+        return server.toJSON()
     }
     return {
         Hostname: server.Hostname,

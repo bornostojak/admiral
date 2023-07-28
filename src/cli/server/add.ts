@@ -8,6 +8,7 @@ import Server, { IServer } from '../../config/server.js'
 import readline from 'readline';
 import ProjectConfig from '../../config/project.js'
 import path from 'path'
+import yaml from 'js-yaml'
 
 var rl = readline.createInterface({
     input: process.stdin,
@@ -73,8 +74,9 @@ export function ProcessCommand(args: string[]) {
                     }
                     mkdirSync(serverDirName, { recursive: true })
                     let serverFile = Server.fromJSON(server)
-                    let serverJson = serverFile.toJSON()
-                    writeFileSync(path.join(serverDirName, "server.json"), JSON.stringify(serverJson, null, 4), { flag: "w+" })
+                    // TODO: move this save operation to the Server class
+                    // writeFileSync(path.join(serverDirName, "server.json"), JSON.stringify(serverFile.toJSON(), null, 4), { flag: "w+" })
+                    writeFileSync(path.join(serverDirName, "server.yaml"), yaml.dump(serverFile.toYAML(), { indent: 2 }), { flag: "w+" })
                     log.Log(log.Print(`Successfully added server <green><b>${projectName}/${server.Name}</b></green>.`))
                 }
 

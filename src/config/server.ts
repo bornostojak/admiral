@@ -5,6 +5,7 @@ import { exit } from 'process'
 import path from 'path'
 import { Status } from './status'
 import ProjectConfig from './project'
+import yaml from "js-yaml"
 
 const log = new logging('Servers')
 
@@ -69,6 +70,27 @@ export default class Server implements IServer {
         DaemonConfig: {}
     }
 
+    public toYAML() {
+        return yaml.dump(Object.fromEntries(Object.entries({
+            hostname: this.Hostname,
+            ipv4: this.IPv4,
+            ipv6: this.IPv6,
+            sshport: this.SSHPort,
+            tags: this.Tags.map(t => String(t)),
+            dns: {
+                fqdn: this.DNS.FQDN,
+                nameservers: this.DNS.Nameservers,
+                hosts: this.DNS.Hosts,
+            },
+            docker: {
+                role: Object.entries(DockerRoleEnum).filter(([k,v]) => v === this.Docker.Role)[0][0] ?? 'worker',
+                labels: this.Docker.Labels,
+                cgroup_version: this.Docker.CgroupVersion,
+                daemon_config: this.Docker.DaemonConfig,
+            }
+        })), { indent: 2 })
+    }
+
     public toJSON() {
         return Object.fromEntries(Object.entries({
             Hostname: this.Hostname,
@@ -84,6 +106,41 @@ export default class Server implements IServer {
                 DaemonConfig: this.Docker.DaemonConfig,
             }
         }))
+    }
+
+    public static fromYAML(yamlData: { [key: string]: any }): Server;
+    public static fromYAML(yamlData: string): Server;
+    public static fromYAML(arg: unknown): Server {
+        log.Trace({ "Parsing SERVER, YAML data": arg })
+        let server: Server = new Server()
+        try {
+            let parsedJson: { [key: string]: any }
+            if (typeof arg === "string") {
+                parsedJson = yaml.load(arg as string) as { [key: string]: any }
+            }
+            else {
+                parsedJson = arg as IServer
+            }
+            server.Hostname = parsedJson.hostname as string
+            server.IPv4 = parsedJson.ipv4 as string
+            server.IPv6 = parsedJson.ipv4 as string
+            server.DNS = parsedJson.dns
+            server.SSHPort = (parsedJson.sshport ?? 22) as number
+            server.Docker = {
+                Role: Object.entries(DockerRoleEnum).filter(([key, val]) => val === parsedJson.docker?.role ?? 'worker').map(([k,v]) => v as DockerRoleEnum)[0] ?? DockerRoleEnum.worker,
+                Labels: parsedJson.docker?.Labels,
+                CgroupVersion: parsedJson.docker?.cgroup_version,
+                DaemonConfig: parsedJson.docker?.daemon_config
+            } 
+            server.Tags = ((parsedJson.tags ?? []) as any[]).map(t => t as string)
+        } catch(err) {
+            log.Error("Encountered error while parsing server json string")
+            log.Error({ type: typeof arg, yamlData: arg })
+            log.Error("Error:")
+            log.Error(err)
+            exit(1)
+        }
+        return server
     }
     public static fromJSON(jsonData: { [key: string]: any }): Server;
     public static fromJSON(jsonData: string): Server;
@@ -102,14 +159,14 @@ export default class Server implements IServer {
             server.IPv4 = parsedJson.IPv4 as string
             server.IPv6 = parsedJson.IPv6 as string
             server.DNS = parsedJson.DNS
-            server.SSHPort = parsedJson.SSHPort as number
+            server.SSHPort = (parsedJson.SSHPort ?? 22) as number
             server.Docker = {
-                Role: Object.entries(DockerRoleEnum).filter(([key, val]) => val === parsedJson.Docker.Level ?? 'worker').map(([k,v]) => v as DockerRoleEnum)[0] ?? DockerRoleEnum.worker,
-                Labels: parsedJson.Docker.Labels,
-                CgroupVersion: parsedJson.Docker.CgroupVersion,
-                DaemonConfig: parsedJson.Docker.DaemonConfig
+                Role: Object.entries(DockerRoleEnum).filter(([key, val]) => val === parsedJson.Docker?.Role ?? 'worker').map(([k,v]) => v as DockerRoleEnum)[0] ?? DockerRoleEnum.worker,
+                Labels: parsedJson.Docker?.Labels,
+                CgroupVersion: parsedJson.Docker?.CgroupVersion,
+                DaemonConfig: parsedJson.Docker?.DaemonConfig
             } 
-            server.Tags = (parsedJson.Tags as any[]).map(t => t as string)
+            server.Tags = ((parsedJson.Tags as []) as any[]).map(t => t as string)
         } catch(err) {
             log.Error("Encountered error while parsing server json string")
             log.Error({ type: typeof arg, jsonData: arg })
@@ -131,7 +188,7 @@ export default class Server implements IServer {
         }
         let projectDirInfo = readdirSync(projectServerDirPath, { withFileTypes: true })
         let serverDirArray = projectDirInfo.filter((pd) => pd.isDirectory() && !pd.name.startsWith('.')).map((pd) => path.join(projectServerDirPath,pd.name))
-        let serverConfigFilePathArray = serverDirArray.map(pd => path.join(pd, "server.json"))
+        let serverConfigFilePathArray = serverDirArray.map(pd => path.join(pd, "server.yaml"))
         let missingServerConfigFiles = serverConfigFilePathArray.filter(scf => !existsSync(scf))
         if (missingServerConfigFiles.length > 0) {
             log.Debug("Missing server config file in following server configurations:")
@@ -148,7 +205,7 @@ export default class Server implements IServer {
         }
         let serverFileContent = readFileSync(path).toString()
         log.Trace({ objective: "Parsing server file to server", path, serverFileContent })
-        return Server.fromJSON(serverFileContent)
+        return Server.fromYAML(serverFileContent)
     }
 }
 
@@ -156,12 +213,13 @@ export default class Server implements IServer {
 
 export async function GrabServers(project: string) : Promise<Array<IServerOld>> {
     let status = Status.Load()
-    let serversFilePath =  path.join(GetLocalConfigLocation(), "projects", project, "servers.json")
+    let serversFilePath =  path.join(GetLocalConfigLocation(), "projects", project, "servers.yaml")
     let serversFile = await fs.promises.readFile(serversFilePath)
     try {
-        let servers = JSON.parse(serversFile.toString())
+        // let servers = JSON.parse(serversFile.toString())
+        let servers = yaml.load(serversFile.toString())
         //TODO: verify the server file
-        return <Array<IServerOld>>servers
+        return servers as Array<IServerOld>
     } catch (err) {
         log.Debug(`Servers file for <red>${project}</red> not found!`)
         log.Trace(err)
