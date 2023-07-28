@@ -4,6 +4,7 @@ import { number, string } from "yargs"
 import * as Json from "../helper/json"
 import { ResolveUri } from "../helper/path"
 import LocalConfig from "./localConfig"
+import yaml from "js-yaml"
 
 
 
@@ -62,6 +63,15 @@ export default class LoggingConfig implements ILogging {
         }
     }
 
+    public toYAML(indent?: number) : string {
+        try {
+            return yaml.dump(this.toObject(), { indent: indent ?? 2 })
+        } catch {
+            let obj = {level: 'error', depth: 'off', color: true}
+            return yaml.dump(this.toObject(), { indent: indent ?? 2 })
+        }
+    }
+
     public toJSON(indent?: number) : string {
         try {
             return indent ? JSON.stringify(this.toObject(), null, indent) : JSON.stringify(this.toObject()) 
@@ -71,6 +81,61 @@ export default class LoggingConfig implements ILogging {
         }
     }
 
+    
+    public static fromYAML(yamlData: string) : LoggingConfig {
+        try {
+            let localConfigObj = yaml.load(yamlData) as { [key: string]: any }
+            let tmp = new LoggingConfig()
+            tmp.Color = "color" in localConfigObj?.logging ? !!localConfigObj?.logging?.color : true
+            switch(localConfigObj?.logging?.level ?? 'error') {
+                case "1":
+                case "error":
+                    tmp.Level = LoggingLevelEnum.error
+                    break
+                case "2":
+                case "debug":
+                    tmp.Level = LoggingLevelEnum.debug
+                    break
+                case "3":
+                case "warning":
+                    tmp.Level = LoggingLevelEnum.warning
+                    break
+                case "4":
+                case "info":
+                    tmp.Level = LoggingLevelEnum.info
+                    break
+                case "5":
+                case "trace":
+                    tmp.Level = LoggingLevelEnum.trace
+                    break
+                default:
+                    tmp.Level = LoggingLevelEnum.error
+            }
+            switch(localConfigObj?.logging?.depth ?? 'off') {
+                case "0":
+                case "off":
+                    tmp.Depth = LoggingDepthEnum.off
+                    break
+                case "1":
+                case "inner":
+                    tmp.Depth = LoggingDepthEnum.inner
+                    break
+                case "2":
+                case "full":
+                    tmp.Depth = LoggingDepthEnum.full
+                    break
+                default:
+                    tmp.Depth = LoggingDepthEnum.off
+                    break
+            }
+            
+            return tmp
+        } catch {
+            return new LoggingConfig()
+        }
+    }
+
+    
     public static fromJSON(jsonData: string) : LoggingConfig {
         try {
             let localConfigObj = JSON.parse(jsonData)
@@ -130,13 +195,13 @@ export default class LoggingConfig implements ILogging {
             .map(f => ResolveUri(f))
             .filter(x => existsSync(x))[0]
 
-        if (!existsSync(path) || !existsSync(`${path}/config.json`)) {
+        if (!existsSync(path) || !existsSync(`${path}/config.yaml`)) {
             return new LoggingConfig() 
                 
         }
 
         try {
-            let localConfig = this.fromJSON(readFileSync(`${path}/config.json`).toString())
+            let localConfig = this.fromYAML(readFileSync(`${path}/config.yaml`).toString())
             return localConfig
             //return Object.assign(new LoggingConfig(), {...localConfig['Logging']})
         } catch {

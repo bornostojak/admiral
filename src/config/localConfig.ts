@@ -4,6 +4,7 @@ import { SSHCredentials } from './ssh.js';
 import logging from '../logging.js'
 import LoggingConfig from './logging.js'
 import { exit } from 'process';
+import yaml from 'js-yaml'
 
 export const ProjectName = 'Admiral'
 
@@ -23,6 +24,30 @@ export default class LocalConfig {
     public Logging : LoggingConfig = LoggingConfig.Load()
     public Visual : string|undefined;
     public Editor : string|undefined;
+
+    /**
+     * 
+     * @param indent the indentation of the a JSON object
+     * @returns the JSON string
+     */
+    public toYAML(): string {
+        let {Username, Password, PrivateKey, PublicKey, ..._} = this.SSH
+        let {Visual, Editor, ...__} = this
+        let json = {} as { [key: string]: any }
+        if (Visual)
+            json["visual"] = Visual
+        if (Editor)
+            json["editor"] = Editor
+        if (this.Confirmation)
+            json["confirmation"] = ConfirmationEnum[this.Confirmation]
+        if (this.Logging)
+            json["logging"] = this.Logging.toObject()
+        if (this.Logging)
+            json["ssh"] = Object.fromEntries(Object.entries({username: Username, password: Password, privatekey: PrivateKey, publickey: PublicKey}).filter(([x,y]) => y))
+        
+        return yaml.dump(json, { indent: 2 })
+    }
+
 
     /**
      * 
@@ -64,6 +89,37 @@ export default class LocalConfig {
             exit(1)
         }
     }
+    
+
+    /**
+     * 
+     * @param yamlData the local configuration data string in YAML format
+     * @returns the LocalConfig object
+     */
+    public static fromYAML(yamlData: string) {
+        try {
+            let yamlParsed = yaml.load(yamlData) as { [key: string]: any }
+            Log.Log(JSON.stringify(yamlParsed, null, 0))
+            let tmp = new LocalConfig()
+            tmp.Confirmation = Object(ConfirmationEnum)[yamlParsed['confirmation'] ?? 'always']
+            let ssh = yamlParsed['ssh'] as {[key:string]: string}
+            tmp.SSH = new SSHCredentials({
+                Username: ssh.username,
+                Password: ssh.password,
+                PrivateKey: ssh.privatekey,
+                PublicKey: ssh.publickey
+            })
+            tmp.Logging = new LoggingConfig(yamlParsed['logging'] as {[key:string]: string})
+            tmp.Visual = yamlParsed['visual']
+            tmp.Editor = yamlParsed['editor']
+            return tmp
+        } catch (err) {
+            Log.Error("An error occurred while parsing the local configuration")
+            Log.Error(err)
+            exit(1)
+        }
+    }
+    
 
     /**
      * 
@@ -76,7 +132,7 @@ export default class LocalConfig {
             let localConfig = new LocalConfig()
             let localConfigJson = readFileSync(path).toString()
             Log.Trace(localConfigJson)
-            return LocalConfig.fromJSON(localConfigJson)
+            return LocalConfig.fromYAML(localConfigJson)
         } catch (err) {
             if (path)
                 Log.Error(`<red><b>The configuration from '${path}' could not be loaded!</b></red>`)
@@ -94,7 +150,7 @@ export default class LocalConfig {
      * @param path the path the file should be saved to - default is LocalConfig.Path()
      * @returns the same config object
      */
-    public static Save(config: LocalConfig, path?: string) : LocalConfig {
+    public static SaveJSON(config: LocalConfig, path?: string) : LocalConfig {
         path = path ? path : this.Path()
         if(!path) {
             LocalConfig.InitLocalConfig(config)
@@ -110,11 +166,29 @@ export default class LocalConfig {
 
     /**
      * 
+     * @param config the LocalConfig object to be serialized
+     * @param path the path the file should be saved to - default is LocalConfig.Path()
+     * @returns the same config object
+     */
+    public static Save(config: LocalConfig, path?: string) : LocalConfig {
+        path = path ? path : this.Path()
+        if(!path) {
+            LocalConfig.InitLocalConfig(config)
+            return config
+        }
+        writeFileSync(path, config.toYAML())
+        return config
+    }
+
+    
+
+    /**
+     * 
      * @returns the path of the local configuration file
      */
     public static Path() : string {
         let directory = this.Directory()
-        let path = `${directory}/config.json`
+        let path = `${directory}/config.yaml`
         if (!existsSync(path)) {
             return ""
             // this.InitLocalConfig()
@@ -152,7 +226,7 @@ export default class LocalConfig {
         if (!existsSync(directory)) {
             mkdirSync(directory, {recursive: true})
         }
-        let configPath = `${directory}/config.json`
+        let configPath = `${directory}/config.yaml`
         if (!existsSync(configPath)) {
             return LocalConfig.Save(config ?? new LocalConfig(), ResolveUri(configPath))
         }
