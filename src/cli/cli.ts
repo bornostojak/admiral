@@ -3,13 +3,12 @@ import bindRemoteSocketAsync from '../connections/sockets.js'
 import {unlinkSync} from "fs"
 import {exit, argv} from 'process'
 import logging from '../logging.js'
-import Config, { ConfigLocations, ProjectName, ProcessCommandSync } from '../config/manager.js'
 import ParseArgs from '../config/args.js'
 import yargs from 'yargs/yargs'
 import yargsParsed, { Options, Argv } from 'yargs'
 import ProcessArguments, { PrintHelp } from './index.js' 
 
-let log = new logging(ProjectName)
+let log = new logging("Admiral")
 
 
 let argsUnparsed = argv.slice(2)

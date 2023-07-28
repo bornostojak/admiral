@@ -1,14 +1,10 @@
-import fs from 'fs'
 import yargs, { Options, help, string } from 'yargs'
 import logging from '../../logging'
 import { Status } from '../../config/status'
 import { exit } from 'process'
-import { GetLocalConfigLocation } from '../../config/manager.js'
-import path from 'path'
 
 import * as helpers from '../helpers/index'
 import ProjectConfig from '../../config/project'
-import { ServerConfig } from 'ssh2'
 import Server from '../../config/server'
 
 let log = new logging("Servers list")

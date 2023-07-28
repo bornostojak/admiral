@@ -4,7 +4,6 @@ import logging, { Formatting } from '../../logging'
 import { Status } from '../../config/status'
 import { exit } from 'process'
 import ProjectConfig, { ProjectStatus } from '../../config/project.js'
-import { GetLocalConfigLocation } from '../../config/manager.js'
 import path from 'path'
 import Colorizer from 'json-colorizer'
 

@@ -5,8 +5,8 @@ import logging from '../../logging'
 import { Status } from '../../config/status'
 import { exit } from 'process'
 import path from 'path'
-import Config, { GetLocalConfigLocation } from '../../config/manager.js'
 import {ContainerTaskSpec, TaskSpec} from 'dockerode'
+import LocalConfig from '../../config/localConfig.js'
 
 let log = new logging("Service List")
 
@@ -25,8 +25,7 @@ export async function ProcessCommand(args: string[]){
     }
     let status = Status.Load()
     for (let activeProject of status.Active) {
-        let activeProjectServersFilePath = path.join(GetLocalConfigLocation(), "projects", activeProject, "servers.json")
-        let localConfig = await Config.GetLocalConfig()
+        let activeProjectServersFilePath = path.join(LocalConfig.Directory(), "projects", activeProject, "servers.json")
         if (!fs.existsSync(activeProjectServersFilePath)) {
             log.Print(`No "servers.json" file exists for project <red>${activeProject}</red>`)
             continue

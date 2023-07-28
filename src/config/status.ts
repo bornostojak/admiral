@@ -1,9 +1,6 @@
-import { GetLocalConfigLocation, Locations } from './manager'
 import { exit } from 'process'
-import fs, { existsSync, mkdirSync, readFileSync, readSync, writeFileSync} from 'fs'
-import path from 'path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs'
 import logging from '../logging'
-import LocalConfig from "./localConfig"
 import { ResolveUri } from '../helper/path'
 import yaml from 'js-yaml'
 
