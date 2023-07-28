@@ -5,6 +5,7 @@ import path from 'path'
 import logging from '../logging'
 import LocalConfig from "./localConfig"
 import { ResolveUri } from '../helper/path'
+import yaml from 'js-yaml'
 
 let log = new logging("Config(Status)")
 
@@ -21,6 +22,22 @@ export class Status {
         State: boolean
     } = {Prompted:false, State: false}
 
+    
+    /**
+     * 
+     * @returns return a JSON of the object
+     */
+    public toYAML() {
+        let json = {
+            active: this.Active,
+            confirmation: {
+                prompted: this.Confirmation?.Prompted,
+                state: this.Confirmation?.State
+            }
+        }
+        return yaml.dump(json, { indent: 2 })
+    }
+    
     /**
      * 
      * @returns return a JSON of the object
@@ -38,26 +55,27 @@ export class Status {
 
     /**
      * 
-     * @param jsonData the status information string in json format
+     * @param yamlData the status information string in json format
      * @returns the Status object
      */
-    public fromJSON(jsonData: string): Status {
+    public static fromYAML(yamlData: string): Status {
+        let tmp = new Status()
         try {
             log.Debug("Converting Status from json string")
-            let jsonParsed = JSON.parse(jsonData)
-            log.Trace(JSON.stringify(jsonParsed))
-            this.Active = jsonParsed['Active'] instanceof Array ? jsonParsed['Active'] : []
-            this.Confirmation = {
-                Prompted: jsonParsed?.Confirmation?.Prompted ?? false,
-                State: jsonParsed?.Confirmation?.State ?? false
+            let yamlParsed = yaml.load(yamlData) as { [key: string]: any }
+            log.Trace(JSON.stringify(yamlParsed))
+            tmp.Active = yamlParsed['active'] instanceof Array ? yamlParsed['active'] : []
+            tmp.Confirmation = {
+                Prompted: yamlParsed?.confirmation?.prompted ?? false,
+                State: yamlParsed?.confirmation?.state ?? false
             }
-            return this
+            return tmp
         } catch(err) {
             log.Error('Failed to parse json data')
             log.Error("ERROR:")
             log.Error(err)
             log.Error("JSON:")
-            log.Error({jsonData})
+            log.Error({ yamlData })
             exit(1)
         }
     }
@@ -100,7 +118,7 @@ export class Status {
             if (!path) {
                 return Status.InitStatus()
             }
-            return this.fromJSON(readFileSync(path).toString())
+            return this.fromYAML(readFileSync(path).toString())
         } catch(err) {
             log.Error("Failed to load the Status file")
             log.Error({err})
@@ -123,7 +141,7 @@ export class Status {
         //         return val
         //     }
         // }, 4)
-        writeFileSync(path, statusJson)
+        writeFileSync(path, status.toYAML())
         return status
     }
 
@@ -133,7 +151,7 @@ export class Status {
      */
     public static Path() : string {
         let directory = this.Directory()
-        let path = `${directory}/status.json`
+        let path = `${directory}/status.yaml`
         if (!existsSync(path)) {
             // autoinitiating because a status file is always necessary
             Status.InitStatus()
@@ -164,7 +182,7 @@ export class Status {
         if (!existsSync(directory)) {
             mkdirSync(directory, {recursive: true})
         }
-        let statusPath = `${directory}/status.json`
+        let statusPath = `${directory}/status.yaml`
         if (!existsSync(statusPath)) {
             return Status.Save(status ?? new Status(), ResolveUri(statusPath))
         }

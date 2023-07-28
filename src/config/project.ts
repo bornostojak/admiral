@@ -4,6 +4,7 @@ import { exit } from 'process'
 import path from 'path'
 import { ResolveUri } from '../helper/path'
 import Server from './server'
+import yaml from 'js-yaml'
 
 
 const log = new logging('Config(project)')
@@ -37,7 +38,8 @@ export default class ProjectConfig {
             let { Path, Name, ...projectConfig } = this.toJSON()
             Path = Path ? Path : path.join(ProjectConfig.Directory(), project ?? Name)
             Path = ResolveUri(Path)
-            writeFileSync(Path, JSON.stringify(projectConfig, (key, val) => { if (val !== undefined) return val }, 4), { flag: "a+" })
+            // writeFileSync(Path, JSON.stringify(projectConfig, (key, val) => { if (val !== undefined) return val }, 4), { flag: "a+" })
+            writeFileSync(Path, this.toYAML())
         } catch (err) {
             log.Error("Failed to save project configuration")
             log.Error((err as Error).message)
@@ -53,12 +55,12 @@ export default class ProjectConfig {
             if (!dirs.includes(project)) {
                 return null
             }
-            let projectConfigFilePath = path.join(dirPath, project, 'project.json')
+            let projectConfigFilePath = path.join(dirPath, project, 'project.yaml')
             let projectConfig: ProjectConfig;
             if (!existsSync(projectConfigFilePath))
                 projectConfig = new ProjectConfig()
             else
-                projectConfig = this.fromJSON(readFileSync(projectConfigFilePath).toString())
+                projectConfig = this.fromYAML(readFileSync(projectConfigFilePath).toString())
             projectConfig.Name = project
             projectConfig.Path = path.join(dirPath, project)
             projectConfig.GetServers()
@@ -99,7 +101,52 @@ export default class ProjectConfig {
             Path: this.Path.replace(ResolveUri('~'), '~'),
         }
     }
+    
+    private toYAML() {
+        let tmp = {
+            status: this.Status
+        }
+        return yaml.dump(tmp, { indent: 2 })
+    }
 
+    private static fromYAML(yamlData: string): ProjectConfig {
+        log.Trace({ "Parsing Project from YAML": yamlData })
+        try {
+            let yamlParsed = yaml.load(yamlData) as { [key: string]: any }
+            log.Trace({ yamlData: yamlData })
+            let tmp = new ProjectConfig()
+            try {
+                switch (yamlParsed?.status ?? "inactive") {
+                    case "active":
+                        tmp.Status = ProjectStatus.active
+                        break
+                    case "inactive":
+                        tmp.Status = ProjectStatus.inactive
+                        break
+                    case "suspended":
+                        tmp.Status = ProjectStatus.suspended
+                        break
+                    case "initialized":
+                        tmp.Status = ProjectStatus.initialized
+                        break
+                    default:
+                        tmp.Status = ProjectStatus.inactive
+                        break
+                }
+            } catch {
+                tmp.Status = ProjectStatus.inactive
+            }
+            if ("Path" in yamlParsed) {
+                tmp.Path = ResolveUri(yamlParsed.Path)
+            }
+            tmp.GetServers()
+            return tmp
+        } catch(err) {
+            log.Error("Errors encountered whilst parsing Project from JSON")
+            log.Error(err)
+            exit(1)
+        }
+    }
     private static fromJSON(jsonData: string): ProjectConfig {
         log.Trace({ "Parsing Project from JSON": jsonData })
         try {
