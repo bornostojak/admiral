@@ -1,7 +1,5 @@
 import { existsSync, readFileSync } from "fs";
 import { ResolveUri } from "../helper/path";
-import logging from "../logging";
-import Config from "./manager";
 
 
 export interface ISSHCredentials {

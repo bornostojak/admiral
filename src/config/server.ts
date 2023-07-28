@@ -1,11 +1,11 @@
 import fs, { existsSync, readFileSync, readdirSync } from 'fs'
-import { GetLocalConfigLocation } from './manager'
 import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
 import { Status } from './status'
 import ProjectConfig from './project'
 import yaml from "js-yaml"
+import LocalConfig from './localConfig'
 
 const log = new logging('Servers')
 
@@ -213,7 +213,7 @@ export default class Server implements IServer {
 
 export async function GrabServers(project: string) : Promise<Array<IServerOld>> {
     let status = Status.Load()
-    let serversFilePath =  path.join(GetLocalConfigLocation(), "projects", project, "servers.yaml")
+    let serversFilePath =  path.join(LocalConfig.Directory(), "projects", project, "servers.yaml")
     let serversFile = await fs.promises.readFile(serversFilePath)
     try {
         // let servers = JSON.parse(serversFile.toString())
