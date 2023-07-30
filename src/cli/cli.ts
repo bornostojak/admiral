@@ -3,7 +3,7 @@ import bindRemoteSocketAsync from '../connections/sockets.js'
 import {unlinkSync} from "fs"
 import {exit, argv} from 'process'
 import logging from '../logging.js'
-import ParseArgs from '../config/args.js'
+import ParseArgs from '../lib/args.js'
 import yargs from 'yargs/yargs'
 import yargsParsed, { Options, Argv } from 'yargs'
 import ProcessArguments, { PrintHelp } from './index.js' 

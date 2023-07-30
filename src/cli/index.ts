@@ -10,9 +10,9 @@ import * as Server from './server'
 import * as Project from './project'
 import * as ConfigCmd from './config'
 
-import LocalConfig from "../config/localConfig.js"
-import { Status } from "../config/status.js"
-import ProjectConfig from "../config/project.js"
+import LocalConfig from "../lib/localConfig.js"
+import { Status } from "../lib/status.js"
+import ProjectConfig from "../lib/project.js"
  
 const log = new logging("Command Parser")
 

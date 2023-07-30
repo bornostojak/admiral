@@ -1,6 +1,6 @@
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status'
 import { exit } from 'process'
 
 let log = new logging("List")

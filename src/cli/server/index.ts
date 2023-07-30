@@ -1,7 +1,7 @@
 import fs from 'fs'
 import yargs, { Options, string } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status'
 import { exit } from 'process'
 import path from 'path'
 import Colorizer from 'json-colorizer'

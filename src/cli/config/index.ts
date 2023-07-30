@@ -1,8 +1,8 @@
 import yargs, { Options } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status'
 import { exit } from 'process'
-import LocalConfig from '../../config/localConfig'
+import LocalConfig from '../../lib/localConfig'
 
 let log = new logging("List")
 

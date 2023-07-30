@@ -2,7 +2,7 @@
 import { env, stderr, stdout } from 'process'
 import chalk, { Chalk } from 'chalk'
 import { inspect } from 'util'
-import LoggingConfig from './config/logging'
+import LoggingConfig from './lib/logging'
 
 var loggingConfig = LoggingConfig.Load()
 

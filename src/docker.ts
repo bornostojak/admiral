@@ -4,8 +4,8 @@ import bindRemoteSocketAsync from './connections/sockets.js'
 import crypto from "crypto"
 import YAML from 'yamljs'
 import * as fs from 'fs';
-import { IServerOld } from "./config/server.js"
-import LocalConfig from "./config/localConfig.js"
+import { IServerOld } from "./lib/server.js"
+import LocalConfig from "./lib/localConfig.js"
 
 let log = new logging("Docker management")
 
