@@ -1,4 +1,4 @@
-import logging, { Formatting as ColorFormatting } from '../logging'
+import logging, { Formatting as ColorFormatting } from '../../logging'
 import Colorizer from 'json-colorizer'
 
 /**

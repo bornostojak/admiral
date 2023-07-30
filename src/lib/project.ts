@@ -2,7 +2,7 @@ import fs, { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } f
 import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
-import { ResolveUri } from '../helper/path'
+import { ResolveUri } from './helpers/path'
 import Server from './server'
 import yaml from 'js-yaml'
 
