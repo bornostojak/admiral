@@ -1,11 +1,11 @@
 import yargs, { Options, help, string } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status'
 import { exit } from 'process'
 
 import * as helpers from '../helpers/index'
-import ProjectConfig from '../../config/project'
-import Server from '../../config/server'
+import ProjectConfig from '../../lib/project'
+import Server from '../../lib/server'
 
 let log = new logging("Servers list")
 

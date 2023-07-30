@@ -1,9 +1,9 @@
 import fs, { existsSync } from 'fs'
 import yargs, { Options, string } from 'yargs'
 import logging, { Formatting } from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status'
 import { exit } from 'process'
-import ProjectConfig, { ProjectStatus } from '../../config/project.js'
+import ProjectConfig, { ProjectStatus } from '../../lib/project.js'
 import path from 'path'
 import Colorizer from 'json-colorizer'
 
@@ -11,7 +11,7 @@ let log = new logging("Projects list")
 
 import * as helpers from '../helpers/index'
 import { toIndentedStringify } from '../helpers/json'
-import { LocalConfig } from '../../config'
+import { LocalConfig } from '../../lib'
 
 export const LocalProjectDirectory = path.join(LocalConfig.Directory(), 'projects')
 

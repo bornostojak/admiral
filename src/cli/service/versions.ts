@@ -2,11 +2,11 @@ import fs from 'fs'
 import { ConnectToDockerOverSSH } from '../../docker.js'
 import yargs, { Options, version } from 'yargs'
 import logging from '../../logging'
-import { Status } from '../../config/status'
+import { Status } from '../../lib/status.js'
 import { exit } from 'process'
 import path from 'path'
 import {ContainerTaskSpec, TaskSpec} from 'dockerode'
-import LocalConfig from '../../config/localConfig.js'
+import LocalConfig from '../../lib/localConfig.js'
 
 let log = new logging("Service List")
 

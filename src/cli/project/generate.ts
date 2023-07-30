@@ -1,7 +1,7 @@
 import fs from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging.js'
-import { Status } from '../../config/status.js'
+import { Status } from '../../lib/status.js'
 import { exit } from 'process'
 
 let log = new logging("Project(Generate)")

@@ -1,12 +1,12 @@
 import fs, { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
 import yargs, { Options } from 'yargs'
 import logging, { Formatting } from '../../logging.js'
-import { Status } from '../../config/status.js'
+import { Status } from '../../lib/status.js'
 import { exit } from 'process'
 import { ColorizedJSON } from '../helpers/json.js'
-import Server, { IServer } from '../../config/server.js'
+import Server, { IServer } from '../../lib/server.js'
 import readline from 'readline';
-import ProjectConfig from '../../config/project.js'
+import ProjectConfig from '../../lib/project.js'
 import path from 'path'
 import yaml from 'js-yaml'
 

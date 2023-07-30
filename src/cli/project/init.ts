@@ -2,8 +2,8 @@ import fs, { existsSync, mkdirSync } from 'fs'
 import yargs, { Options } from 'yargs'
 import logging from '../../logging.js'
 import { exit } from 'process'
-import { Status } from '../../config/status.js'
-import ProjectConfig from '../../config/project.js'
+import { Status } from '../../lib/status.js'
+import ProjectConfig from '../../lib/project.js'
 import path from 'path'
 
 let log = new logging("Project(init)")

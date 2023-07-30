@@ -1,5 +1,5 @@
 import { existsSync } from "fs";
-import LocalConfig from "../../config/localConfig";
+import LocalConfig from "../../lib/localConfig";
 import { ResolveUri } from "../../helper/path";
 
 
