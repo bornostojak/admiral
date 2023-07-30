@@ -1,7 +1,7 @@
 import { exit } from 'process'
 import { existsSync, mkdirSync, readFileSync, writeFileSync} from 'fs'
 import logging from '../logging'
-import { ResolveUri } from '../helper/path'
+import { ResolveUri } from './helpers/path'
 import yaml from 'js-yaml'
 
 let log = new logging("Config(Status)")

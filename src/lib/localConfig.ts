@@ -1,5 +1,5 @@
 import fs, { existsSync, lstat, mkdir, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { ResolveUri } from '../helper/path.js';
+import { ResolveUri } from './helpers/path.js';
 import { SSHCredentials } from './ssh.js';
 import logging from '../logging.js'
 import LoggingConfig from './logging.js'
