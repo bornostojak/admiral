@@ -3,7 +3,7 @@ import yargs, { Options, string } from 'yargs'
 import logging, { Formatting } from '../../logging'
 import { Status } from '../../lib/status'
 import { exit } from 'process'
-import ProjectConfig, { ProjectStatus } from '../../lib/project.js'
+import ProjectConfig, { ProjectStatus } from '../../lib/project/config.js'
 import path from 'path'
 import Colorizer from 'json-colorizer'
 
@@ -22,6 +22,27 @@ export const CommandOptions: Record<string, Options> = {
     "table": { boolean: true, alias: 't' },
     "json": { boolean: true, alias: 'j' },
     "status": { string: true }
+}
+
+function ProjectToJsonWithStatusInColor(project: ProjectConfig): { [key: string]: any } {
+    let status = `${ProjectStatus[project.Status].slice(0, 1).toUpperCase() + ProjectStatus[project.Status].slice(1)}`
+    switch (project.Status) {
+        case ProjectStatus.active:
+            status = `<green>${status}</green>`
+            break
+        case ProjectStatus.inactive: 
+            status = `<red>${status}</red>`
+            break
+        case ProjectStatus.suspended:
+            status = `<blue>${status}</blue>`
+            break
+        case ProjectStatus.initialized:
+            status = `<yellow>${status}</yellow>`
+            break
+    }
+    let json = project.toJSON()
+    json.Status = status
+    return json
 }
 
 export async function ProcessCommand(args: string[]) {
@@ -85,19 +106,12 @@ export async function ProcessCommand(args: string[]) {
         exit(0)
     }
     if (parsedArgs.table) {
-        log.Print(helpers.Json.toTableString(projects.map(p => p.toJSON())))
+        log.Print(helpers.Json.toTableString(projects.map(p => ProjectToJsonWithStatusInColor(p))))
         exit(0)
     }
 
-    let projectStatusArray = projects.map(p => {
-        switch (p.Status) {
-            case ProjectStatus.active: return [p.Name, `<green>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</green>`]
-            case ProjectStatus.inactive: return [p.Name, `<red>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</red>`]
-            case ProjectStatus.suspended: return [p.Name, `<blue>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</blue>`]
-            case ProjectStatus.initialized: return [p.Name, `<yellow>${ProjectStatus[p.Status].slice(0, 1).toUpperCase() + ProjectStatus[p.Status].slice(1)}</yellow>`]
-
-        }
-    })
+    let projectMaxNameLength = projects?.map(p => p.Name.length)?.sort()?.reverse()[0] ?? 0
+    let projectStatusArray = projects.map(p => [`${p.Name}`+' '.repeat((projectMaxNameLength > p.Name.length ? projectMaxNameLength : p.Name.length)-p.Name.length+1) +`(${ProjectToJsonWithStatusInColor(p).Status})`, p.Environments.map(e => e.Name)])
     let statusesObject = Object.fromEntries(projectStatusArray)
     log.Print(toIndentedStringify([statusesObject], { title: "Projects" }))
     exit(0)

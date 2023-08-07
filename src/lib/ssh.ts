@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "fs";
-import { ResolveUri } from "../helper/path";
+import { ResolveUri } from "./helpers/path";
 
 
 export interface ISSHCredentials {

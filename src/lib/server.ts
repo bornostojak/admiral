@@ -3,7 +3,7 @@ import logging from '../logging'
 import { exit } from 'process'
 import path from 'path'
 import { Status } from './status'
-import ProjectConfig from './project'
+import ProjectConfig from './project/config'
 import yaml from "js-yaml"
 import LocalConfig from './localConfig'
 

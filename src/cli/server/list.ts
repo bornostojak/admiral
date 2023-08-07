@@ -4,7 +4,7 @@ import { Status } from '../../lib/status'
 import { exit } from 'process'
 
 import * as helpers from '../helpers/index'
-import ProjectConfig from '../../lib/project'
+import ProjectConfig from '../../lib/project/config'
 import Server from '../../lib/server'
 
 let log = new logging("Servers list")

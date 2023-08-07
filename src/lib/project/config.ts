@@ -1,11 +1,12 @@
 import fs, { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'fs'
-import logging from '../logging'
+import logging from '../../logging'
 import { exit } from 'process'
 import path from 'path'
-import { ResolveUri } from '../helper/path'
-import Server from './server'
+import { ResolveUri } from '../helpers/path'
+import Server from '../server'
 import yaml from 'js-yaml'
 
+import ProjectEnvironment from './environment'
 
 const log = new logging('Config(project)')
 
@@ -22,6 +23,8 @@ export default class ProjectConfig {
     public Name: string = ""
     public Path: string = ""
     public Servers: Server[] = []
+    
+    public Environments: ProjectEnvironment[] = []
     
     private constructor() {
 
@@ -61,13 +64,19 @@ export default class ProjectConfig {
                 projectConfig = new ProjectConfig()
             else
                 projectConfig = this.fromYAML(readFileSync(projectConfigFilePath).toString())
+            let envPath = path.join(dirPath, project, 'environments')
+            if (fs.existsSync(envPath)) {
+                projectConfig.Environments = fs.readdirSync(envPath, {withFileTypes: true})
+                    .filter(e => e.isDirectory() && fs.existsSync(path.join(envPath, e.name, 'environment.yaml')))
+                    .map(e => ProjectEnvironment.Load(path.join(envPath, e.name)))
+            }
             projectConfig.Name = project
             projectConfig.Path = path.join(dirPath, project)
             projectConfig.GetServers()
             return projectConfig
         } catch (err) {
             log.Log("Failed to load project configuration")
-            log.Log(err)
+            log.Error(err)
             return null
         }
 
