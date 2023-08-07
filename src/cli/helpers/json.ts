@@ -1,5 +1,7 @@
-import logging, { Formatting as ColorFormatting } from '../../logging'
+import Color from '../../lib/helpers/color'
 import Colorizer from 'json-colorizer'
+
+const NoCol = (str: string) => Color.Coloring(str, { noColor: true })
 
 /**
  * 
@@ -18,17 +20,17 @@ export function toTableString(obj: unknown, title?: false): string {
         let final = ''
         for (let [key, content] of Object.entries(obj as { [key: string]: any[] })) {
             let tableString = toTableString(content)
-            let rowLength = tableString.split('\n')[0].length
+            let rowLength = NoCol(tableString.split('\n')[0]).length
             if (rowLength < 2) {
                 final += ""
                 continue
             }
             final += `+${"-".repeat(rowLength - 2)}+\n`
-            final += `| <cyan><b>${key}</b></cyan>${" ".repeat(rowLength - key.length - 3)}|\n`
+            final += `| <cyan><b>${key}</b></cyan>${" ".repeat(rowLength - NoCol(key).length - 3)}|\n`
             // final += `+${(new Array(rowLength-2)).join("-")}+\n`
             final += tableString
         }
-        return ColorFormatting(final)
+        return Color.Coloring(final)
     }
 
     if (obj.length == 0) {
@@ -46,7 +48,7 @@ export function toTableString(obj: unknown, title?: false): string {
         ?.map(o => Object.fromEntries(
             Object.entries(o)
                 .filter(([x, y]) => x && y)
-                .map(([x, y]) => [x, y.length > String(x).length ? y.length : String(x).length])
+                .map(([x, y]) => [x, NoCol(y).length > NoCol(String(x)).length ? NoCol(y).length : NoCol(String(x)).length])
         ))
     let cellWidthByHeader = maxLengthArray.reduce((res, o) => {
         for (let key of [...Object.keys(res), ...Object.keys(o)]) {
@@ -58,7 +60,7 @@ export function toTableString(obj: unknown, title?: false): string {
     let border = '+' + Object.values(cellWidthByHeader).map(l => "-".repeat(l + 2)).join("+") + "+\n"
 
     // headers
-    let headers = Object.entries(cellWidthByHeader).map(([header, width]) => `| ${header}${' '.repeat(width - header.length + 1)}`).join('') + '|\n'
+    let headers = Object.entries(cellWidthByHeader).map(([header, width]) => `| ${header}${' '.repeat(width - NoCol(header).length + 1)}`).join('') + '|\n'
     // defining the header row 
     let tableString = border + headers + border.replace(/-/g, "=")
     // iterating over the elements to define each row
@@ -70,7 +72,7 @@ export function toTableString(obj: unknown, title?: false): string {
                 continue
             }
             let cellValue = rowObject[header]
-            tableString += `| ${cellValue}${' '.repeat(cellWidth - cellValue.length)} `
+            tableString += `| ${cellValue}${' '.repeat(cellWidth - NoCol(cellValue).length)} `
         }
         // finish the row string an continue to the next row
         tableString += "|\n"
@@ -92,7 +94,7 @@ export function toIndentedStringify(obj: {[key: string]: any}[], heading?: { tit
         if (heading["value"]) {
             Header += `: <b><cyan>${heading.value}</cyan></b>`
         }
-        finalString += ColorFormatting(Header) + '\n'
+        finalString += Color.Coloring(Header) + '\n'
     }
     // let objArray: Object[] = (obj instanceof Array) ? obj : [obj]
     for (let entry of obj) {
@@ -107,10 +109,10 @@ function leftPadding(string: string): string {
 
 function convertObjectToString(obj: {[key: string]: any}): string {
     let parsedString: string = ""
-    let longestKeyLength = 4 + Math.max(...(Object.keys(obj).map(x => x.length)))
+    let longestKeyLength = 4 + Math.max(...(Object.keys(obj).map(x => NoCol(x).length)))
     for (let [header, content] of Object.entries(obj)) {
-        let spacing = " ".repeat(longestKeyLength - header.length) + ': '
-        parsedString += ColorFormatting(`<b><cyan>${header}</cyan></b>`)
+        let spacing = " ".repeat(longestKeyLength - NoCol(header).length) + ': '
+        parsedString += Color.Coloring(`<b><cyan>${header}</cyan></b>`)
         if (content instanceof Array) {
             parsedString += spacing + content.map(x => (typeof x === "string") ? x : JSON.stringify(x)).join(', ') + '\n'
             continue

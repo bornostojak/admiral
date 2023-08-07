@@ -12,7 +12,7 @@ import * as ConfigCmd from './config'
 
 import LocalConfig from "../lib/localConfig.js"
 import { Status } from "../lib/status.js"
-import ProjectConfig from "../lib/project.js"
+import ProjectConfig from "../lib/project/config.js"
  
 const log = new logging("Command Parser")
 

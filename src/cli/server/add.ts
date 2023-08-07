@@ -6,7 +6,7 @@ import { exit } from 'process'
 import { ColorizedJSON } from '../helpers/json.js'
 import Server, { IServer } from '../../lib/server.js'
 import readline from 'readline';
-import ProjectConfig from '../../lib/project.js'
+import ProjectConfig from '../../lib/project/config.js'
 import path from 'path'
 import yaml from 'js-yaml'
 

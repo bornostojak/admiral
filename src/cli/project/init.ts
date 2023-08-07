@@ -3,7 +3,7 @@ import yargs, { Options } from 'yargs'
 import logging from '../../logging.js'
 import { exit } from 'process'
 import { Status } from '../../lib/status.js'
-import ProjectConfig from '../../lib/project.js'
+import ProjectConfig from '../../lib/project/config.js'
 import path from 'path'
 
 let log = new logging("Project(init)")
